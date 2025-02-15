@@ -49,10 +49,10 @@ func main() {
 
 	folders, err := exporter.GetFolders(nodes)
 
-	//documents, err := exporter.GetDocuments(users, nodes, settings.MediaRoot)
+	documents, err := exporter.GetDocuments(nodes, settings.MediaRoot)
 	//fmt.P
 
-	err = exporter.CreateYAML("export.yaml", users, folders)
+	err = exporter.CreateYAML("export.yaml", users, folders, documents)
 	if err != nil {
 		log.Fatalf("Error writing to file: %v", err)
 		return

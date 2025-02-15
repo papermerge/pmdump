@@ -48,13 +48,15 @@ type DocumentVersion struct {
 }
 
 type Document struct {
-	ID       int
-	UUID     uuid.UUID
-	Title    string
-	UserID   int  `yaml:"user_id"`
-	ParentID *int `yaml:"parent_id"`
-	Version  *DocumentVersion
-	Versions []DocumentVersion
+	ID         int
+	UUID       uuid.UUID
+	Title      string
+	UserID     int        `yaml:"user_id"`
+	ParentID   *int       `yaml:"parent_id"`
+	UserUUID   uuid.UUID  `yaml:"user_uuid"`
+	ParentUUID *uuid.UUID `yaml:"parent_uuid"`
+	Version    *DocumentVersion
+	Versions   []DocumentVersion
 }
 
 type Page struct {

@@ -6,9 +6,89 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/papermerge/pmg-dump/models"
 )
+
+func makeDocument(node models.Node, mediaRoot string) models.Document {
+	var versions []models.DocumentVersion
+
+	document := models.Document{
+		ID:       node.ID,
+		Title:    node.Title,
+		UserID:   node.UserID,
+		UUID:     node.UUID,
+		ParentID: node.ParentID,
+	}
+
+	if node.ParentID != nil {
+		document.ParentID = node.ParentID
+		parentUUID := NodeID2UUID[*node.ParentID]
+		document.ParentUUID = &parentUUID
+	}
+
+	originalDocPath := fmt.Sprintf("%s/docs/user_%d/document_%d/%s",
+		mediaRoot,
+		node.UserID,
+		node.ID,
+		*node.FileName,
+	)
+	if _, err := os.Stat(originalDocPath); err == nil {
+		version := models.DocumentVersion{
+			Number:   0,
+			UUID:     uuid.New(),
+			FileName: node.FileName,
+		}
+		versions = append(versions, version)
+	}
+
+	path := fmt.Sprintf(
+		"%s/docs/user_%d/document_%d/",
+		mediaRoot,
+		node.UserID,
+		node.ID,
+	)
+	entries, err := os.ReadDir(path)
+
+	if err != nil {
+		fmt.Println("Error reading directory:", err)
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			strVersionNumber := entry.Name()[1:]
+			versionNumber, err := strconv.Atoi(strVersionNumber)
+			if err != nil {
+				fmt.Printf("Error: %v", err)
+				continue
+			}
+			version := models.DocumentVersion{
+				Number:   versionNumber,
+				UUID:     uuid.New(),
+				FileName: node.FileName,
+			}
+			versions = append(versions, version)
+		}
+	}
+
+	document.Versions = versions
+	return document
+}
+
+func GetDocuments(nodes []models.Node, mediaRoot string) ([]models.Document, error) {
+	var documents []models.Document
+
+	for _, node := range nodes {
+		if node.Model == models.DocumentModelName {
+			document := makeDocument(node, mediaRoot)
+			documents = append(documents, document)
+		}
+	}
+
+	return documents, nil
+}
 
 func GetFolders(nodes []models.Node) ([]models.Folder, error) {
 	var folders []models.Folder

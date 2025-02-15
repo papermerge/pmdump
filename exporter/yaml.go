@@ -7,7 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func CreateYAML(fileName string, users []models.User, folders []models.Folder) error {
+func CreateYAML(fileName string, users []models.User, folders []models.Folder, documents []models.Document) error {
 
 	file, err := os.Create(fileName)
 	if err != nil {
@@ -16,8 +16,9 @@ func CreateYAML(fileName string, users []models.User, folders []models.Folder) e
 	defer file.Close()
 
 	data := models.Data{
-		Users:   users,
-		Folders: folders,
+		Users:     users,
+		Folders:   folders,
+		Documents: documents,
 	}
 
 	yamlData, err := yaml.Marshal(&data)
