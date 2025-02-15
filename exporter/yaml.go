@@ -3,7 +3,7 @@ package exporter
 import (
 	"os"
 
-	"github.com/papermerge/migrate/models"
+	"github.com/papermerge/pmg-dump/models"
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,6 +28,7 @@ func CreateYAML(fileName string, users []models.User, nodes []models.Node) error
 				Version:   node.Version,
 				FileName:  node.FileName,
 				PageCount: node.PageCount,
+				UUID:      node.UUID,
 			}
 			documents = append(documents, document)
 		} else {
@@ -36,6 +37,7 @@ func CreateYAML(fileName string, users []models.User, nodes []models.Node) error
 				Title:    node.Title,
 				UserID:   node.UserID,
 				ParentID: node.ParentID,
+				UUID:     node.UUID,
 			}
 			folders = append(folders, folder)
 		}

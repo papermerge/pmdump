@@ -3,7 +3,9 @@ package exporter
 import (
 	"database/sql"
 
-	"github.com/papermerge/migrate/models"
+	"github.com/google/uuid"
+
+	"github.com/papermerge/pmg-dump/models"
 )
 
 func GetUsers(db *sql.DB) ([]models.User, error) {
@@ -21,6 +23,7 @@ func GetUsers(db *sql.DB) ([]models.User, error) {
 		if err != nil {
 			return nil, err
 		}
+		user.UUID = uuid.New()
 		users = append(users, user)
 	}
 
@@ -69,6 +72,7 @@ func GetNodes(db *sql.DB) ([]models.Node, error) {
 		if err != nil {
 			return nil, err
 		}
+		node.UUID = uuid.New()
 		nodes = append(nodes, node)
 	}
 	return nodes, nil

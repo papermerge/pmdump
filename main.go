@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/papermerge/migrate/config"
-	"github.com/papermerge/migrate/exporter"
+	"github.com/papermerge/pmg-dump/config"
+	"github.com/papermerge/pmg-dump/exporter"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -50,6 +50,19 @@ func main() {
 	err = exporter.CreateYAML("export.yaml", users, nodes)
 	if err != nil {
 		log.Fatalf("Error writing to file: %v", err)
+		return
+	}
+
+	paths, err := exporter.GetFilePaths(users, nodes, settings.MediaRoot)
+
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+		return
+	}
+
+	err = exporter.CreateTarGz(settings.TargetFile, paths)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
 		return
 	}
 
