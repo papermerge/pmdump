@@ -8,6 +8,9 @@ import (
 	"github.com/papermerge/pmg-dump/models"
 )
 
+var NodeID2UUID map[int]uuid.UUID
+var UserID2UUID map[int]uuid.UUID
+
 func GetUsers(db *sql.DB) ([]models.User, error) {
 	rows, err := db.Query("SELECT id, username, email FROM core_user")
 	if err != nil {
@@ -17,6 +20,8 @@ func GetUsers(db *sql.DB) ([]models.User, error) {
 
 	var users []models.User
 
+	UserID2UUID = make(map[int]uuid.UUID)
+
 	for rows.Next() {
 		var user models.User
 		err = rows.Scan(&user.ID, &user.Username, &user.EMail)
@@ -24,6 +29,7 @@ func GetUsers(db *sql.DB) ([]models.User, error) {
 			return nil, err
 		}
 		user.UUID = uuid.New()
+		UserID2UUID[user.ID] = user.UUID
 		users = append(users, user)
 	}
 
@@ -58,6 +64,8 @@ func GetNodes(db *sql.DB) ([]models.Node, error) {
 
 	var nodes []models.Node
 
+	NodeID2UUID = make(map[int]uuid.UUID)
+
 	for rows.Next() {
 		var node models.Node
 		err = rows.Scan(
@@ -73,6 +81,7 @@ func GetNodes(db *sql.DB) ([]models.Node, error) {
 			return nil, err
 		}
 		node.UUID = uuid.New()
+		NodeID2UUID[node.ID] = node.UUID
 		nodes = append(nodes, node)
 	}
 	return nodes, nil

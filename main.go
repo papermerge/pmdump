@@ -47,24 +47,31 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = exporter.CreateYAML("export.yaml", users, nodes)
+	folders, err := exporter.GetFolders(nodes)
+
+	//documents, err := exporter.GetDocuments(users, nodes, settings.MediaRoot)
+	//fmt.P
+
+	err = exporter.CreateYAML("export.yaml", users, folders)
 	if err != nil {
 		log.Fatalf("Error writing to file: %v", err)
 		return
 	}
 
-	paths, err := exporter.GetFilePaths(users, nodes, settings.MediaRoot)
+	/*
+	   paths, err := exporter.GetFilePaths(users, nodes, settings.MediaRoot)
 
-	if err != nil {
-		log.Fatalf("Error: %v", err)
-		return
-	}
+	   if err != nil {
+	     log.Fatalf("Error: %v", err)
+	     return
+	   }
 
-	err = exporter.CreateTarGz(settings.TargetFile, paths)
-	if err != nil {
-		log.Fatalf("Error: %v", err)
-		return
-	}
+	   err = exporter.CreateTarGz(settings.TargetFile, paths)
+	   if err != nil {
+	     log.Fatalf("Error: %v", err)
+	     return
+	   }
+	*/
 
 	fmt.Printf("Success!\n")
 }

@@ -10,6 +10,33 @@ import (
 	"github.com/papermerge/pmg-dump/models"
 )
 
+func GetFolders(nodes []models.Node) ([]models.Folder, error) {
+	var folders []models.Folder
+
+	for _, node := range nodes {
+		if node.Model == models.FolderModelName {
+
+			folder := models.Folder{
+				ID:     node.ID,
+				Title:  node.Title,
+				UserID: node.UserID,
+				UUID:   node.UUID,
+			}
+
+			folder.UserUUID = UserID2UUID[folder.UserID]
+
+			if node.ParentID != nil {
+				parentUUID := NodeID2UUID[*node.ParentID]
+				folder.ParentUUID = &parentUUID
+				folder.ParentID = node.ParentID
+			}
+			folders = append(folders, folder)
+		}
+	}
+
+	return folders, nil
+}
+
 func GetFilePaths(users []models.User, nodes []models.Node, mediaRoot string) ([]models.FilePath, error) {
 	var paths []models.FilePath
 
