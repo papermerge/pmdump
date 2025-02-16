@@ -19,7 +19,7 @@ var configFile = flag.String("c", "config.yaml", "path to config file")
 var listConfigurations = flag.Bool("l", false, "List configurations and quit")
 var targetFile = flag.String("f", "output.tar.gz", "Target file - zipped tar archive file name were to dump")
 
-const export_yaml = "export.yaml"
+const exportYaml = "export.yaml"
 const exportCommand = "export"
 const importCommand = "import"
 
@@ -84,7 +84,7 @@ func doExport() {
 
 	documents, err := models.GetDocuments(nodes, settings.MediaRoot, idsDict)
 
-	err = exporter.CreateYAML(export_yaml, users, folders, documents)
+	err = exporter.CreateYAML(exportYaml, users, folders, documents)
 	if err != nil {
 		log.Fatalf("Error writing to file: %v", err)
 		return
@@ -97,14 +97,14 @@ func doExport() {
 		return
 	}
 
-	paths = append(paths, models.FilePath{Source: export_yaml, Dest: export_yaml})
+	paths = append(paths, models.FilePath{Source: exportYaml, Dest: exportYaml})
 
 	err = exporter.CreateTarGz(*targetFile, paths)
 	if err != nil {
 		log.Fatalf("Error creating archive: %v", err)
 		return
 	}
-	os.Remove(export_yaml)
+	os.Remove(exportYaml)
 }
 
 func doImport() {
