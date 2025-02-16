@@ -9,6 +9,13 @@ const (
 	DocumentModelName = "document"
 )
 
+type ID2UUID map[int]uuid.UUID
+
+type IDDict struct {
+	NodeIDs ID2UUID
+	UserIDs ID2UUID
+}
+
 type User struct {
 	ID       int
 	UUID     uuid.UUID
@@ -55,7 +62,6 @@ type Document struct {
 	ParentID   *int       `yaml:"parent_id"`
 	UserUUID   uuid.UUID  `yaml:"user_uuid"`
 	ParentUUID *uuid.UUID `yaml:"parent_uuid"`
-	Version    *DocumentVersion
 	Versions   []DocumentVersion
 }
 

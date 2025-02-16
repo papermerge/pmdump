@@ -14,7 +14,6 @@ Example of config.yaml file
 ```yaml
 media_root: /path/to/media/folder/
 database_url: /path/to/data/papermerge.db
-target_file: "mydb.tar.gz"
 ```
 
 ## Usage
