@@ -25,5 +25,7 @@ $ pmg_dump -c export.yaml export
 ```
 
 ```
-$ pmg_dump -c import.yaml import -f /path/to/archive.tar.gz
+$ pmg_dump -c import.yaml -f /path/to/archive.tar.gz import
 ```
+
+Note that `export` or `import` commands are at the end of parameters list.
