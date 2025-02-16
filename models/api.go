@@ -24,7 +24,23 @@ func MakeNodeID2UIDMap(nodes []Node) ID2UUID {
 	return dict
 }
 
-func NewDocument(node Node, mediaRoot string, idsDict IDDict) Document {
+func MakePages(
+	doc Document,
+	docVer DocumentVersion,
+	mediaRoot string,
+	docPages []DocumentPageRow,
+) ([]Page, error) {
+	var pages []Page
+
+	return pages, nil
+}
+
+func NewDocument(
+	node Node,
+	mediaRoot string,
+	idsDict IDDict,
+	docPages []DocumentPageRow,
+) Document {
 	var versions []DocumentVersion
 
 	document := Document{
@@ -54,6 +70,12 @@ func NewDocument(node Node, mediaRoot string, idsDict IDDict) Document {
 			UUID:     uuid.New(),
 			FileName: node.FileName,
 		}
+		pages, err := MakePages(document, version, mediaRoot, docPages)
+		if err != nil {
+			fmt.Printf("Error: NewDocument: %s\n", err)
+		} else {
+			version.Pages = pages
+		}
 		versions = append(versions, version)
 	}
 
@@ -82,6 +104,12 @@ func NewDocument(node Node, mediaRoot string, idsDict IDDict) Document {
 				UUID:     uuid.New(),
 				FileName: node.FileName,
 			}
+			pages, err := MakePages(document, version, mediaRoot, docPages)
+			if err != nil {
+				fmt.Printf("Error: NewDocument: %s\n", err)
+			} else {
+				version.Pages = pages
+			}
 			versions = append(versions, version)
 		}
 	}
@@ -90,12 +118,12 @@ func NewDocument(node Node, mediaRoot string, idsDict IDDict) Document {
 	return document
 }
 
-func GetDocuments(nodes []Node, mediaRoot string, idsDict IDDict) ([]Document, error) {
+func GetDocuments(nodes []Node, mediaRoot string, idsDict IDDict, docPages []DocumentPageRow) ([]Document, error) {
 	var documents []Document
 
 	for _, node := range nodes {
 		if node.Model == DocumentModelName {
-			document := NewDocument(node, mediaRoot, idsDict)
+			document := NewDocument(node, mediaRoot, idsDict, docPages)
 			documents = append(documents, document)
 		}
 	}

@@ -72,6 +72,8 @@ func doExport() {
 		log.Fatal(err)
 	}
 
+	docPages, err := database.GetDocumentPageRows(db)
+
 	userIDdict := models.MakeUserID2UIDMap(users)
 	nodeIDdict := models.MakeNodeID2UIDMap(nodes)
 
@@ -82,7 +84,7 @@ func doExport() {
 
 	folders, err := models.GetFolders(nodes, idsDict)
 
-	documents, err := models.GetDocuments(nodes, settings.MediaRoot, idsDict)
+	documents, err := models.GetDocuments(nodes, settings.MediaRoot, idsDict, docPages)
 
 	err = exporter.CreateYAML(exportYaml, users, folders, documents)
 	if err != nil {

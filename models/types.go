@@ -66,6 +66,7 @@ type Document struct {
 }
 
 type Page struct {
+	ID     int
 	UUID   uuid.UUID
 	Number int
 	Text   string
@@ -80,4 +81,13 @@ type Data struct {
 type FilePath struct {
 	Source string
 	Dest   string
+}
+
+type DocumentPageRow struct {
+	PageID          int
+	PageUUID        uuid.UUID
+	PageNumber      int
+	Text            string
+	DocumentID      int
+	DocumentVersion int
 }
