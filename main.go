@@ -28,10 +28,14 @@ func main() {
 
 	args := flag.Args()
 
+	if *listConfigurations {
+		listConfigs()
+		os.Exit(0)
+	}
+
 	if len(args) == 0 {
-		fmt.Println("Missing command")
+		fmt.Printf("Missing command: can be either %q or %q\n", exportCommand, importCommand)
 		os.Exit(1)
-		return
 	}
 
 	if args[0] == exportCommand {
@@ -39,11 +43,9 @@ func main() {
 	} else if args[0] == importCommand {
 		doImport()
 	} else {
-		fmt.Printf("Unknown command. Can be either %q or %q\n", exportCommand, importCommand)
+		fmt.Printf("Unknown command. can be either %q or %q\n", exportCommand, importCommand)
 		os.Exit(1)
-		return
 	}
-
 }
 
 func doExport() {
@@ -52,15 +54,6 @@ func doExport() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
-		return
-	}
-
-	if *listConfigurations {
-		fmt.Printf("Configuration file: %s\n", *configFile)
-		fmt.Printf("Database URL: %s\n", settings.DatabaseURL)
-		fmt.Printf("Media Root: %s\n", settings.MediaRoot)
-		fmt.Printf("Target File: %s\n", *targetFile)
-		return
 	}
 
 	db, err := sql.Open("sqlite3", settings.DatabaseURL)
@@ -115,5 +108,18 @@ func doExport() {
 }
 
 func doImport() {
+}
 
+func listConfigs() {
+	settings, err := config.ReadConfig(*configFile)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Configuration file: %s\n", *configFile)
+	fmt.Printf("Database URL: %s\n", settings.DatabaseURL)
+	fmt.Printf("Media Root: %s\n", settings.MediaRoot)
+	fmt.Printf("Target File: %s\n", *targetFile)
 }
