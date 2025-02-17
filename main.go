@@ -10,12 +10,13 @@ import (
 	"github.com/papermerge/pmg-dump/config"
 	"github.com/papermerge/pmg-dump/database"
 	"github.com/papermerge/pmg-dump/exporter"
+	"github.com/papermerge/pmg-dump/importer"
 	"github.com/papermerge/pmg-dump/models"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var configFile = flag.String("c", "config.yaml", "path to config file")
+var configFile = flag.String("c", "source.yaml", "path to config file")
 var listConfigurations = flag.Bool("l", false, "List configurations and quit")
 var targetFile = flag.String("f", "output.tar.gz", "Target file - zipped tar archive file name were to dump")
 
@@ -39,16 +40,16 @@ func main() {
 	}
 
 	if args[0] == exportCommand {
-		doExport()
+		performExport()
 	} else if args[0] == importCommand {
-		doImport()
+		performImport()
 	} else {
 		fmt.Printf("Unknown command. can be either %q or %q\n", exportCommand, importCommand)
 		os.Exit(1)
 	}
 }
 
-func doExport() {
+func performExport() {
 	settings, err := config.ReadConfig(*configFile)
 
 	if err != nil {
@@ -72,6 +73,11 @@ func doExport() {
 		log.Fatal(err)
 	}
 
+	tags, err := database.GetTags(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	docPages, err := database.GetDocumentPageRows(db)
 
 	userIDdict := models.MakeUserID2UIDMap(users)
@@ -86,7 +92,14 @@ func doExport() {
 
 	documents, err := models.GetDocuments(nodes, settings.MediaRoot, idsDict, docPages)
 
-	err = exporter.CreateYAML(exportYaml, users, folders, documents)
+	err = exporter.CreateYAML(
+		exportYaml,
+		users,
+		folders,
+		documents,
+		tags,
+	)
+
 	if err != nil {
 		log.Fatalf("Error writing to file: %v", err)
 		return
@@ -109,7 +122,26 @@ func doExport() {
 	os.Remove(exportYaml)
 }
 
-func doImport() {
+func performImport() {
+	settings, err := config.ReadConfig(*configFile)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+	err = importer.ExtractTarGz(*targetFile, settings.MediaRoot)
+	if err != nil {
+		log.Fatalf("Error extracting archive: %v", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Documents extracted into %q\n", settings.MediaRoot)
+	yamlPath := settings.MediaRoot + "/" + exportYaml
+	var data models.Data
+	err = importer.ReadYAML(yamlPath, &data)
+
+	if err != nil {
+		fmt.Printf("Error:performImport: %s", err)
+	}
 }
 
 func listConfigs() {

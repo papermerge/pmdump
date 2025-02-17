@@ -76,6 +76,7 @@ type Data struct {
 	Users     []User
 	Documents []Document
 	Folders   []Folder
+	Tags      []Tag
 }
 
 type FilePath struct {
@@ -90,4 +91,14 @@ type DocumentPageRow struct {
 	Text            string
 	DocumentID      int
 	DocumentVersion int
+}
+
+type Tag struct {
+	ID          int
+	UUID        uuid.UUID
+	Name        string
+	Description string
+	BGColor     string
+	FGColor     string
+	Pinned      bool
 }

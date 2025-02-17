@@ -32,6 +32,73 @@ func MakePages(
 ) ([]Page, error) {
 	var pages []Page
 
+	// In DB (i.e. in `DocumentPageRow` entries) is stored only last version of
+	// of the document.
+	for _, entry := range docPages {
+		if entry.DocumentID == doc.ID && entry.DocumentVersion == docVer.Number {
+			pages = append(pages, Page{
+				ID:     entry.PageID,
+				Number: entry.PageNumber,
+				Text:   entry.Text,
+				UUID:   uuid.New(),
+			})
+		}
+	}
+
+	// there was at least one page found for this document version
+	// means means this is latest document version
+	if len(pages) > 0 {
+		return pages, nil
+	}
+
+	var pagesPath string
+	// found out pages from filesystem
+	if docVer.Number == 0 {
+		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/pages/",
+			mediaRoot,
+			doc.UserID,
+			doc.ID,
+		)
+	} else {
+		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/v%d/pages/",
+			mediaRoot,
+			doc.UserID,
+			doc.ID,
+			docVer.Number,
+		)
+	}
+	pageFiles, err := os.ReadDir(pagesPath)
+
+	if err != nil {
+		fmt.Println("Error reading directory:", err)
+	}
+
+	for _, pageFile := range pageFiles {
+		if !pageFile.IsDir() {
+			// cut '.txt' part
+			fullName := pageFile.Name()
+			name := fullName[:len(fullName)-4]
+			// cut 'page_' part
+			name = name[5:]
+			pageNumber, err := strconv.Atoi(name)
+			if err != nil {
+				fmt.Printf("Error: %v", err)
+			}
+			fullFilePath := pagesPath + pageFile.Name()
+			data, err := os.ReadFile(fullFilePath)
+
+			if err != nil {
+				fmt.Printf("Error: %v", err)
+			}
+
+			pages = append(pages, Page{
+				Number: pageNumber,
+				UUID:   uuid.New(),
+				Text:   string(data),
+			})
+		}
+	}
+
 	return pages, nil
 }
 
@@ -64,6 +131,7 @@ func NewDocument(
 		node.ID,
 		*node.FileName,
 	)
+
 	if _, err := os.Stat(originalDocPath); err == nil {
 		version := DocumentVersion{
 			Number:   0,
@@ -74,7 +142,10 @@ func NewDocument(
 		if err != nil {
 			fmt.Printf("Error: NewDocument: %s\n", err)
 		} else {
+			var pageCount int = 0
 			version.Pages = pages
+			pageCount = len(pages)
+			version.PageCount = &pageCount
 		}
 		versions = append(versions, version)
 	}
@@ -108,7 +179,10 @@ func NewDocument(
 			if err != nil {
 				fmt.Printf("Error: NewDocument: %s\n", err)
 			} else {
+				var pageCount int = 0
 				version.Pages = pages
+				pageCount = len(pages)
+				version.PageCount = &pageCount
 			}
 			versions = append(versions, version)
 		}
