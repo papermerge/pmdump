@@ -46,6 +46,12 @@ func GetNodes(db *sql.DB) ([]models.Node, error) {
 			return nil, err
 		}
 		node.UUID = uuid.New()
+		if node.Title == ".inbox" {
+			node.Title = "inbox"
+		}
+		if node.Title == ".home" {
+			node.Title = "home"
+		}
 		nodes = append(nodes, node)
 	}
 	return nodes, nil

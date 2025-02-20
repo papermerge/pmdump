@@ -9,9 +9,12 @@ import (
 
 	"github.com/papermerge/pmg-dump/config"
 	"github.com/papermerge/pmg-dump/database"
+	"github.com/papermerge/pmg-dump/database2"
 	"github.com/papermerge/pmg-dump/exporter"
+	"github.com/papermerge/pmg-dump/exporter2"
 	"github.com/papermerge/pmg-dump/importer"
 	"github.com/papermerge/pmg-dump/models"
+	"github.com/papermerge/pmg-dump/models2"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -40,11 +43,55 @@ func main() {
 	}
 
 	if args[0] == exportCommand {
-		performExport()
+		performExport2()
 	} else if args[0] == importCommand {
 		performImport()
 	} else {
 		fmt.Printf("Unknown command. can be either %q or %q\n", exportCommand, importCommand)
+		os.Exit(1)
+	}
+}
+
+func performExport2() {
+	settings, err := config.ReadConfig(*configFile)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	db, err := sql.Open("sqlite3", settings.DatabaseURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	users, err := database2.GetUsers(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i, _ := range users {
+		database2.GetUserNodes(db, &users[i])
+		docPages, err := database2.GetDocumentPageRows(db, users[i].ID)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error getting GetDocumentPageRows: %v", err)
+		}
+		docs1 := users[i].Home.GetUserDocuments()
+		docs2 := users[i].Inbox.GetUserDocuments()
+		docs := append(docs1, docs2...)
+		err = models2.InsertDocVersionsAndPages(docs, docPages, settings.MediaRoot)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error while inserting document versions: %v", err)
+		}
+	}
+
+	err = exporter2.CreateYAML(
+		exportYaml,
+		users,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error writing to file:performExport2: %v", err)
 		os.Exit(1)
 	}
 }
