@@ -1,22 +1,22 @@
-package database2
+package database
 
 import (
 	"database/sql"
 
-	"github.com/papermerge/pmdump/models2"
+	"github.com/papermerge/pmdump/models"
 )
 
-func GetUsers(db *sql.DB) ([]models2.User, error) {
+func GetUsers(db *sql.DB) ([]models.User, error) {
 	rows, err := db.Query("SELECT id, username, email FROM core_user")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var users []models2.User
+	var users []models.User
 
 	for rows.Next() {
-		var user models2.User
+		var user models.User
 		err = rows.Scan(&user.ID, &user.Username, &user.EMail)
 		if err != nil {
 			return nil, err

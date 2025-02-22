@@ -49,4 +49,20 @@ Note that `export` or `import` commands are at the end of parameters list.
 
 ## Development
 
+You need golang version 1.24:
 
+```
+$ go version
+
+go version go1.24.0
+```
+
+To compile from source code use following commands:
+
+```
+$ go mod download
+$ go mod tidy
+$ go build dump.go
+```
+
+Above commands will create `pmdump` binary.

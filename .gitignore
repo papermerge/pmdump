@@ -1,4 +1,5 @@
 main
+pmdump
 vendor/
 *.yaml
 .vscode/
