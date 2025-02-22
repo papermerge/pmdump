@@ -1,14 +1,14 @@
-package database
+package database2
 
 import (
 	"database/sql"
 
 	"github.com/google/uuid"
 
-	"github.com/papermerge/pmg-dump/models"
+	"github.com/papermerge/pmdump/models"
 )
 
-func GetDocumentPageRows(db *sql.DB) ([]models.DocumentPageRow, error) {
+func GetDocumentPageRows(db *sql.DB, user_id int) ([]models.DocumentPageRow, error) {
 	query := `
     SELECT p.id,
       p.number,
@@ -16,9 +16,12 @@ func GetDocumentPageRows(db *sql.DB) ([]models.DocumentPageRow, error) {
       p.document_id,
       doc.version
     FROM core_page p
-    JOIN core_document doc ON p.document_id = doc.basetreenode_ptr_id;
+    JOIN core_document doc
+      ON p.document_id = doc.basetreenode_ptr_id
+    JOIN core_basetreenode node ON node.id = doc.basetreenode_ptr_id
+    WHERE node.user_id = ?;
   `
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, user_id)
 	if err != nil {
 		return nil, err
 	}

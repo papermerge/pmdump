@@ -7,11 +7,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/papermerge/pmg-dump/config"
-	"github.com/papermerge/pmg-dump/database2"
-	"github.com/papermerge/pmg-dump/exporter2"
-	"github.com/papermerge/pmg-dump/importer2"
-	"github.com/papermerge/pmg-dump/models2"
+	"github.com/papermerge/pmdump/config"
+	"github.com/papermerge/pmdump/database"
+	"github.com/papermerge/pmdump/exporter"
+	"github.com/papermerge/pmdump/importer"
+	"github.com/papermerge/pmdump/models"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -50,7 +50,7 @@ func main() {
 }
 
 func performExport2() {
-	var filePaths []models2.FilePath
+	var filePaths []models.FilePath
 	settings, err := config.ReadConfig(*configFile)
 
 	if err != nil {
@@ -64,41 +64,41 @@ func performExport2() {
 	}
 	defer db.Close()
 
-	users, err := database2.GetUsers(db)
+	users, err := database.GetUsers(db)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for i := 0; i < len(users); i++ {
-		database2.GetUserNodes(db, &users[i])
-		docPages, err := database2.GetDocumentPageRows(db, users[i].ID)
+		database.GetUserNodes(db, &users[i])
+		docPages, err := database.GetDocumentPageRows(db, users[i].ID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting GetDocumentPageRows: %v", err)
 		}
-		models2.ForEachDocument(
+		models.ForEachDocument(
 			users[i].Home,
 			users[i].ID,
 			docPages,
 			settings.MediaRoot,
-			models2.InsertDocVersionsAndPages,
+			models.InsertDocVersionsAndPages,
 		)
-		models2.ForEachDocument(
+		models.ForEachDocument(
 			users[i].Inbox,
 			users[i].ID,
 			docPages,
 			settings.MediaRoot,
-			models2.InsertDocVersionsAndPages,
+			models.InsertDocVersionsAndPages,
 		)
 	}
 
 	for i := 0; i < len(users); i++ {
-		var allDocs []models2.Node
+		var allDocs []models.Node
 
 		inbox := users[i].Inbox.GetUserDocuments()
 		home := users[i].Home.GetUserDocuments()
 		allDocs = append(allDocs, inbox...)
 		allDocs = append(allDocs, home...)
-		userFilePaths, err := models2.GetFilePaths(allDocs, users[i].ID, settings.MediaRoot)
+		userFilePaths, err := models.GetFilePaths(allDocs, users[i].ID, settings.MediaRoot)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error getting file paths: %v\n", err)
@@ -107,7 +107,7 @@ func performExport2() {
 		filePaths = append(filePaths, userFilePaths...)
 	}
 
-	err = exporter2.CreateYAML(
+	err = exporter.CreateYAML(
 		exportYaml,
 		users,
 	)
@@ -116,9 +116,9 @@ func performExport2() {
 		os.Exit(1)
 	}
 
-	filePaths = append(filePaths, models2.FilePath{Source: exportYaml, Dest: exportYaml})
+	filePaths = append(filePaths, models.FilePath{Source: exportYaml, Dest: exportYaml})
 
-	err = exporter2.CreateTarGz(*targetFile, filePaths)
+	err = exporter.CreateTarGz(*targetFile, filePaths)
 	if err != nil {
 		log.Fatalf("Error creating archive: %v", err)
 		return
@@ -134,7 +134,7 @@ func performImport2() {
 		os.Exit(1)
 	}
 
-	err = importer2.ExtractTarGz(*targetFile, settings.MediaRoot)
+	err = importer.ExtractTarGz(*targetFile, settings.MediaRoot)
 	if err != nil {
 		log.Fatalf("Error extracting archive: %v", err)
 		os.Exit(1)
@@ -142,8 +142,8 @@ func performImport2() {
 	fmt.Printf("Documents extracted into %q\n", settings.MediaRoot)
 
 	yamlPath := settings.MediaRoot + "/" + exportYaml
-	var data models2.Data
-	err = importer2.ReadYAML(yamlPath, &data)
+	var data models.Data
+	err = importer.ReadYAML(yamlPath, &data)
 
 	if err != nil {
 		fmt.Printf("Error:performImport: %s", err)

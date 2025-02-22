@@ -4,28 +4,138 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 )
 
-func MakeUserID2UIDMap(users []User) ID2UUID {
-	dict := make(ID2UUID)
-	for _, user := range users {
-		dict[user.ID] = user.UUID
+func (n *Node) Insert(flatNode FlatNode) {
+	parts := strings.Split(flatNode.FullPath, "/") // Split breadcrumb into parts
+	current := n
+
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		if current.Children == nil {
+			current.Children = make(map[string]*Node)
+		}
+		if _, exists := current.Children[part]; !exists {
+			current.Children[part] = &Node{
+				Title:     part,
+				ID:        flatNode.ID,
+				NodeType:  NodeType(flatNode.Model),
+				FileName:  flatNode.FileName,
+				PageCount: flatNode.PageCount,
+				Version:   flatNode.Version,
+			}
+		}
+		current = current.Children[part]
 	}
-	return dict
 }
 
-func MakeNodeID2UIDMap(nodes []Node) ID2UUID {
-	dict := make(ID2UUID)
-	for _, node := range nodes {
-		dict[node.ID] = node.UUID
+func (n *Node) GetUserDocuments() []Node {
+	var results []Node
+
+	if n.NodeType == DocumentType {
+		results = append(results, *n)
 	}
-	return dict
+
+	for _, child := range n.Children {
+		docs := child.GetUserDocuments()
+		results = append(results, docs...)
+	}
+
+	return results
+}
+
+func ForEachDocument(
+	n *Node,
+	user_id int,
+	docPages []DocumentPageRow,
+	mediaRoot string,
+	op NodeOperation,
+) {
+	if n.NodeType == DocumentType {
+		op(n, user_id, docPages, mediaRoot)
+	}
+
+	for _, child := range n.Children {
+		ForEachDocument(child, user_id, docPages, mediaRoot, op)
+	}
+}
+
+func InsertDocVersionsAndPages(
+	n *Node,
+	user_id int,
+	docPages []DocumentPageRow,
+	mediaRoot string,
+) {
+	var versions []DocumentVersion
+
+	originalDocPath := fmt.Sprintf("%s/docs/user_%d/document_%d/%s",
+		mediaRoot,
+		user_id,
+		n.ID,
+		*n.FileName,
+	)
+
+	if _, err := os.Stat(originalDocPath); err == nil {
+		version := DocumentVersion{
+			Number:   0,
+			UUID:     uuid.New(),
+			FileName: *n.FileName,
+		}
+		pages, err := MakePages(n, user_id, version, mediaRoot, docPages)
+		if err != nil {
+			fmt.Printf("Error: NewDocument: %s\n", err)
+		} else {
+			version.Pages = pages
+		}
+		versions = append(versions, version)
+	}
+
+	path := fmt.Sprintf(
+		"%s/docs/user_%d/document_%d/",
+		mediaRoot,
+		user_id,
+		n.ID,
+	)
+	entries, err := os.ReadDir(path)
+
+	if err != nil {
+		fmt.Println("Error reading directory:", err)
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			strVersionNumber := entry.Name()[1:]
+			versionNumber, err := strconv.Atoi(strVersionNumber)
+			if err != nil {
+				fmt.Printf("Error: %v", err)
+				continue
+			}
+			version := DocumentVersion{
+				Number:   versionNumber,
+				UUID:     uuid.New(),
+				FileName: *n.FileName,
+			}
+			pages, err := MakePages(n, user_id, version, mediaRoot, docPages)
+			if err != nil {
+				fmt.Printf("Error: NewDocument: %s\n", err)
+			} else {
+				version.Pages = pages
+			}
+			versions = append(versions, version)
+		}
+	}
+
+	n.Versions = versions
 }
 
 func MakePages(
-	doc Document,
+	n *Node,
+	user_id int,
 	docVer DocumentVersion,
 	mediaRoot string,
 	docPages []DocumentPageRow,
@@ -35,9 +145,8 @@ func MakePages(
 	// In DB (i.e. in `DocumentPageRow` entries) is stored only last version of
 	// of the document.
 	for _, entry := range docPages {
-		if entry.DocumentID == doc.ID && entry.DocumentVersion == docVer.Number {
+		if entry.DocumentID == n.ID && entry.DocumentVersion == docVer.Number {
 			pages = append(pages, Page{
-				ID:     entry.PageID,
 				Number: entry.PageNumber,
 				Text:   entry.Text,
 				UUID:   uuid.New(),
@@ -56,14 +165,14 @@ func MakePages(
 	if docVer.Number == 0 {
 		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/pages/",
 			mediaRoot,
-			doc.UserID,
-			doc.ID,
+			user_id,
+			n.ID,
 		)
 	} else {
 		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/v%d/pages/",
 			mediaRoot,
-			doc.UserID,
-			doc.ID,
+			user_id,
+			n.ID,
 			docVer.Number,
 		)
 	}
@@ -102,137 +211,7 @@ func MakePages(
 	return pages, nil
 }
 
-func NewDocument(
-	node Node,
-	mediaRoot string,
-	idsDict IDDict,
-	docPages []DocumentPageRow,
-) Document {
-	var versions []DocumentVersion
-
-	document := Document{
-		ID:       node.ID,
-		Title:    node.Title,
-		UserID:   node.UserID,
-		UserUUID: idsDict.UserIDs[node.UserID],
-		UUID:     node.UUID,
-		ParentID: node.ParentID,
-	}
-
-	if node.ParentID != nil {
-		document.ParentID = node.ParentID
-		parentUUID := idsDict.NodeIDs[*node.ParentID]
-		document.ParentUUID = &parentUUID
-	}
-
-	originalDocPath := fmt.Sprintf("%s/docs/user_%d/document_%d/%s",
-		mediaRoot,
-		node.UserID,
-		node.ID,
-		*node.FileName,
-	)
-
-	if _, err := os.Stat(originalDocPath); err == nil {
-		version := DocumentVersion{
-			Number:   0,
-			UUID:     uuid.New(),
-			FileName: node.FileName,
-		}
-		pages, err := MakePages(document, version, mediaRoot, docPages)
-		if err != nil {
-			fmt.Printf("Error: NewDocument: %s\n", err)
-		} else {
-			var pageCount int = 0
-			version.Pages = pages
-			pageCount = len(pages)
-			version.PageCount = &pageCount
-		}
-		versions = append(versions, version)
-	}
-
-	path := fmt.Sprintf(
-		"%s/docs/user_%d/document_%d/",
-		mediaRoot,
-		node.UserID,
-		node.ID,
-	)
-	entries, err := os.ReadDir(path)
-
-	if err != nil {
-		fmt.Println("Error reading directory:", err)
-	}
-
-	for _, entry := range entries {
-		if entry.IsDir() {
-			strVersionNumber := entry.Name()[1:]
-			versionNumber, err := strconv.Atoi(strVersionNumber)
-			if err != nil {
-				fmt.Printf("Error: %v", err)
-				continue
-			}
-			version := DocumentVersion{
-				Number:   versionNumber,
-				UUID:     uuid.New(),
-				FileName: node.FileName,
-			}
-			pages, err := MakePages(document, version, mediaRoot, docPages)
-			if err != nil {
-				fmt.Printf("Error: NewDocument: %s\n", err)
-			} else {
-				var pageCount int = 0
-				version.Pages = pages
-				pageCount = len(pages)
-				version.PageCount = &pageCount
-			}
-			versions = append(versions, version)
-		}
-	}
-
-	document.Versions = versions
-	return document
-}
-
-func GetDocuments(nodes []Node, mediaRoot string, idsDict IDDict, docPages []DocumentPageRow) ([]Document, error) {
-	var documents []Document
-
-	for _, node := range nodes {
-		if node.Model == DocumentModelName {
-			document := NewDocument(node, mediaRoot, idsDict, docPages)
-			documents = append(documents, document)
-		}
-	}
-
-	return documents, nil
-}
-
-func GetFolders(nodes []Node, idsDict IDDict) ([]Folder, error) {
-	var folders []Folder
-
-	for _, node := range nodes {
-		if node.Model == FolderModelName {
-
-			folder := Folder{
-				ID:     node.ID,
-				Title:  node.Title,
-				UserID: node.UserID,
-				UUID:   node.UUID,
-			}
-
-			folder.UserUUID = idsDict.UserIDs[folder.UserID]
-
-			if node.ParentID != nil {
-				parentUUID := idsDict.NodeIDs[*node.ParentID]
-				folder.ParentUUID = &parentUUID
-				folder.ParentID = node.ParentID
-			}
-			folders = append(folders, folder)
-		}
-	}
-
-	return folders, nil
-}
-
-func GetFilePaths(docs []Document, mediaRoot string) ([]FilePath, error) {
+func GetFilePaths(docs []Node, user_id int, mediaRoot string) ([]FilePath, error) {
 	var paths []FilePath
 
 	for _, doc := range docs {
@@ -242,22 +221,22 @@ func GetFilePaths(docs []Document, mediaRoot string) ([]FilePath, error) {
 				source = fmt.Sprintf(
 					"%s/docs/user_%d/document_%d/%s",
 					mediaRoot,
-					doc.UserID,
+					user_id,
 					doc.ID,
-					*docVer.FileName,
+					*doc.FileName,
 				)
 			} else {
 				source = fmt.Sprintf(
 					"%s/docs/user_%d/document_%d/v%d/%s",
 					mediaRoot,
-					doc.UserID,
+					user_id,
 					doc.ID,
 					docVer.Number,
-					*docVer.FileName,
+					*doc.FileName,
 				)
 			}
 			uid := docVer.UUID.String()
-			dest := fmt.Sprintf("docvers/%s/%s/%s/%s", uid[0:2], uid[2:4], uid, *docVer.FileName)
+			dest := fmt.Sprintf("docvers/%s/%s/%s/%s", uid[0:2], uid[2:4], uid, *doc.FileName)
 			path := FilePath{
 				Source: source,
 				Dest:   dest,

@@ -1,4 +1,4 @@
-package exporter2
+package exporter
 
 import (
 	"archive/tar"
@@ -7,10 +7,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/papermerge/pmg-dump/models2"
+	"github.com/papermerge/pmdump/models"
 )
 
-func CreateTarGz(outputFilename string, paths []models2.FilePath) error {
+func CreateTarGz(outputFilename string, paths []models.FilePath) error {
 	// Create output file
 	outFile, err := os.Create(outputFilename)
 	if err != nil {
@@ -37,7 +37,7 @@ func CreateTarGz(outputFilename string, paths []models2.FilePath) error {
 	return nil
 }
 
-func addFileToTar(tw *tar.Writer, path models2.FilePath) error {
+func addFileToTar(tw *tar.Writer, path models.FilePath) error {
 	// Open the file
 	file, err := os.Open(path.Source)
 	if err != nil {

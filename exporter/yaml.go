@@ -1,15 +1,15 @@
-package exporter2
+package exporter
 
 import (
 	"os"
 
-	"github.com/papermerge/pmg-dump/models2"
+	"github.com/papermerge/pmdump/models"
 	"gopkg.in/yaml.v3"
 )
 
 func CreateYAML(
 	fileName string,
-	users []models2.User,
+	users []models.User,
 ) error {
 
 	file, err := os.Create(fileName)
@@ -18,7 +18,7 @@ func CreateYAML(
 	}
 	defer file.Close()
 
-	data := models2.Data{
+	data := models.Data{
 		Users: users,
 	}
 

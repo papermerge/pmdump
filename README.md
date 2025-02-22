@@ -41,7 +41,12 @@ database_url: /path/to/data/papermerge.db
 ```
 
 ```
-$ pmg_dump -c dest.yaml -f /path/to/archive.tar.gz import
+$ pmdump -c dest.yaml -f /path/to/archive.tar.gz import
 ```
 
 Note that `export` or `import` commands are at the end of parameters list.
+
+
+## Development
+
+

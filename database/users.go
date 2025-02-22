@@ -1,29 +1,26 @@
-package database
+package database2
 
 import (
 	"database/sql"
 
-	"github.com/google/uuid"
-
-	"github.com/papermerge/pmg-dump/models"
+	"github.com/papermerge/pmdump/models2"
 )
 
-func GetUsers(db *sql.DB) ([]models.User, error) {
+func GetUsers(db *sql.DB) ([]models2.User, error) {
 	rows, err := db.Query("SELECT id, username, email FROM core_user")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var users []models.User
+	var users []models2.User
 
 	for rows.Next() {
-		var user models.User
+		var user models2.User
 		err = rows.Scan(&user.ID, &user.Username, &user.EMail)
 		if err != nil {
 			return nil, err
 		}
-		user.UUID = uuid.New()
 		users = append(users, user)
 	}
 

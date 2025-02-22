@@ -1,87 +1,58 @@
 package models
 
-import (
-	"github.com/google/uuid"
-)
+import "github.com/google/uuid"
+
+type NodeType string
 
 const (
-	FolderModelName   = "folder"
-	DocumentModelName = "document"
+	FolderType   NodeType = "folder"
+	DocumentType NodeType = "document"
 )
-
-type ID2UUID map[int]uuid.UUID
-
-type IDDict struct {
-	NodeIDs ID2UUID
-	UserIDs ID2UUID
-}
 
 type User struct {
 	ID       int
-	UUID     uuid.UUID
 	Username string
 	EMail    string
+	Home     *Node
+	Inbox    *Node
+}
+
+type FlatNode struct {
+	ID        int
+	Title     string
+	Model     string
+	FullPath  string
+	FileName  *string
+	PageCount *int
+	Version   *int
 }
 
 type Node struct {
-	ID         int
-	UUID       uuid.UUID
-	Title      string
-	Model      string
-	UserID     int       `yaml:"user_id"`
-	FileName   *string   `yaml:"file_name"`
-	PageCount  *int      `yaml:"page_count"`
-	ParentID   *int      `yaml:"parent_id"`
-	ParentUUID uuid.UUID `yaml:"parent_uuid"`
-	Version    *int
-}
-
-type Folder struct {
-	ID         int
-	UUID       uuid.UUID
-	Title      string
-	UserID     int        `yaml:"user_id"`
-	UserUUID   uuid.UUID  `yaml:"user_uuid"`
-	ParentID   *int       `yaml:"parent_id"`
-	ParentUUID *uuid.UUID `yaml:"parent_uuid"`
+	ID        int
+	Title     string           `yaml:"title"`
+	Children  map[string]*Node `yaml:"children,omitempty"`
+	NodeType  NodeType
+	Versions  []DocumentVersion `yaml:"versions,omitempty"`
+	FileName  *string           `yaml:"file_name,omitempty"`
+	PageCount *int              `yaml:"page_count,omitempty"`
+	Version   *int              `yaml:"version,omitempty"`
 }
 
 type DocumentVersion struct {
-	Number    int
-	UUID      uuid.UUID
-	FileName  *string `yaml:"file_name"`
-	PageCount *int    `yaml:"page_count"`
-	Pages     []Page
-}
-
-type Document struct {
-	ID         int
-	UUID       uuid.UUID
-	Title      string
-	UserID     int        `yaml:"user_id"`
-	ParentID   *int       `yaml:"parent_id"`
-	UserUUID   uuid.UUID  `yaml:"user_uuid"`
-	ParentUUID *uuid.UUID `yaml:"parent_uuid"`
-	Versions   []DocumentVersion
+	UUID     uuid.UUID
+	Number   int
+	FileName string `yaml:"file_name"`
+	Pages    []Page
 }
 
 type Page struct {
-	ID     int
 	UUID   uuid.UUID
-	Number int
 	Text   string
+	Number int
 }
 
 type Data struct {
-	Users     []User
-	Documents []Document
-	Folders   []Folder
-	Tags      []Tag
-}
-
-type FilePath struct {
-	Source string
-	Dest   string
+	Users []User
 }
 
 type DocumentPageRow struct {
@@ -93,12 +64,9 @@ type DocumentPageRow struct {
 	DocumentVersion int
 }
 
-type Tag struct {
-	ID          int
-	UUID        uuid.UUID
-	Name        string
-	Description string
-	BGColor     string
-	FGColor     string
-	Pinned      bool
+type NodeOperation func(n *Node, user_id int, docPages []DocumentPageRow, mediaRoot string)
+
+type FilePath struct {
+	Source string
+	Dest   string
 }

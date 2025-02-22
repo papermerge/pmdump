@@ -1,4 +1,4 @@
-package importer2
+package importer
 
 import (
 	"archive/tar"
