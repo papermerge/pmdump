@@ -18,18 +18,24 @@ type User struct {
 }
 
 type FlatNode struct {
-	ID       int
-	Title    string
-	Model    string
-	FullPath string
+	ID        int
+	Title     string
+	Model     string
+	FullPath  string
+	FileName  *string
+	PageCount *int
+	Version   *int
 }
 
 type Node struct {
-	ID       int
-	Title    string           `yaml:"title"`
-	Children map[string]*Node `yaml:"children,omitempty"`
-	NodeType NodeType
-	Versions []DocumentVersion
+	ID        int
+	Title     string           `yaml:"title"`
+	Children  map[string]*Node `yaml:"children,omitempty"`
+	NodeType  NodeType
+	Versions  []DocumentVersion `yaml:"versions,omitempty"`
+	FileName  *string           `yaml:"file_name,omitempty"`
+	PageCount *int              `yaml:"page_count,omitempty"`
+	Version   *int              `yaml:"version,omitempty"`
 }
 
 type DocumentVersion struct {
@@ -40,8 +46,9 @@ type DocumentVersion struct {
 }
 
 type Page struct {
-	UUID uuid.UUID
-	Text string
+	UUID   uuid.UUID
+	Text   string
+	Number int
 }
 
 type Data struct {
@@ -55,4 +62,11 @@ type DocumentPageRow struct {
 	Text            string
 	DocumentID      int
 	DocumentVersion int
+}
+
+type NodeOperation func(n *Node, user_id int, docPages []DocumentPageRow, mediaRoot string)
+
+type FilePath struct {
+	Source string
+	Dest   string
 }

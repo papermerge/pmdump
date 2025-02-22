@@ -1,15 +1,15 @@
-package importer
+package importer2
 
 import (
 	"os"
 
-	"github.com/papermerge/pmg-dump/models"
+	"github.com/papermerge/pmg-dump/models2"
 	"gopkg.in/yaml.v3"
 )
 
 func ReadYAML(
 	fileName string,
-	data *models.Data,
+	data *models2.Data,
 ) error {
 
 	content, err := os.ReadFile(fileName)

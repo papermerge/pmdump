@@ -8,12 +8,9 @@ import (
 	"os"
 
 	"github.com/papermerge/pmg-dump/config"
-	"github.com/papermerge/pmg-dump/database"
 	"github.com/papermerge/pmg-dump/database2"
-	"github.com/papermerge/pmg-dump/exporter"
 	"github.com/papermerge/pmg-dump/exporter2"
-	"github.com/papermerge/pmg-dump/importer"
-	"github.com/papermerge/pmg-dump/models"
+	"github.com/papermerge/pmg-dump/importer2"
 	"github.com/papermerge/pmg-dump/models2"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -45,7 +42,7 @@ func main() {
 	if args[0] == exportCommand {
 		performExport2()
 	} else if args[0] == importCommand {
-		performImport()
+		performImport2()
 	} else {
 		fmt.Printf("Unknown command. can be either %q or %q\n", exportCommand, importCommand)
 		os.Exit(1)
@@ -53,6 +50,7 @@ func main() {
 }
 
 func performExport2() {
+	var filePaths []models2.FilePath
 	settings, err := config.ReadConfig(*configFile)
 
 	if err != nil {
@@ -71,19 +69,42 @@ func performExport2() {
 		log.Fatal(err)
 	}
 
-	for i, _ := range users {
+	for i := 0; i < len(users); i++ {
 		database2.GetUserNodes(db, &users[i])
 		docPages, err := database2.GetDocumentPageRows(db, users[i].ID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting GetDocumentPageRows: %v", err)
 		}
-		docs1 := users[i].Home.GetUserDocuments()
-		docs2 := users[i].Inbox.GetUserDocuments()
-		docs := append(docs1, docs2...)
-		err = models2.InsertDocVersionsAndPages(docs, docPages, settings.MediaRoot)
+		models2.ForEachDocument(
+			users[i].Home,
+			users[i].ID,
+			docPages,
+			settings.MediaRoot,
+			models2.InsertDocVersionsAndPages,
+		)
+		models2.ForEachDocument(
+			users[i].Inbox,
+			users[i].ID,
+			docPages,
+			settings.MediaRoot,
+			models2.InsertDocVersionsAndPages,
+		)
+	}
+
+	for i := 0; i < len(users); i++ {
+		var allDocs []models2.Node
+
+		inbox := users[i].Inbox.GetUserDocuments()
+		home := users[i].Home.GetUserDocuments()
+		allDocs = append(allDocs, inbox...)
+		allDocs = append(allDocs, home...)
+		userFilePaths, err := models2.GetFilePaths(allDocs, users[i].ID, settings.MediaRoot)
+
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error while inserting document versions: %v", err)
+			fmt.Fprintf(os.Stderr, "error getting file paths: %v\n", err)
 		}
+
+		filePaths = append(filePaths, userFilePaths...)
 	}
 
 	err = exporter2.CreateYAML(
@@ -94,74 +115,10 @@ func performExport2() {
 		fmt.Fprintf(os.Stderr, "Error writing to file:performExport2: %v", err)
 		os.Exit(1)
 	}
-}
 
-func performExport() {
-	settings, err := config.ReadConfig(*configFile)
+	filePaths = append(filePaths, models2.FilePath{Source: exportYaml, Dest: exportYaml})
 
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
-
-	db, err := sql.Open("sqlite3", settings.DatabaseURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	users, err := database.GetUsers(db)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nodes, err := database.GetNodes(db)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tags, err := database.GetTags(db)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	docPages, err := database.GetDocumentPageRows(db)
-
-	userIDdict := models.MakeUserID2UIDMap(users)
-	nodeIDdict := models.MakeNodeID2UIDMap(nodes)
-
-	idsDict := models.IDDict{
-		UserIDs: userIDdict,
-		NodeIDs: nodeIDdict,
-	}
-
-	folders, err := models.GetFolders(nodes, idsDict)
-
-	documents, err := models.GetDocuments(nodes, settings.MediaRoot, idsDict, docPages)
-
-	err = exporter.CreateYAML(
-		exportYaml,
-		users,
-		folders,
-		documents,
-		tags,
-	)
-
-	if err != nil {
-		log.Fatalf("Error writing to file: %v", err)
-		return
-	}
-
-	paths, err := models.GetFilePaths(documents, settings.MediaRoot)
-
-	if err != nil {
-		log.Fatalf("Error getting files paths: %v", err)
-		return
-	}
-
-	paths = append(paths, models.FilePath{Source: exportYaml, Dest: exportYaml})
-
-	err = exporter.CreateTarGz(*targetFile, paths)
+	err = exporter2.CreateTarGz(*targetFile, filePaths)
 	if err != nil {
 		log.Fatalf("Error creating archive: %v", err)
 		return
@@ -169,22 +126,24 @@ func performExport() {
 	os.Remove(exportYaml)
 }
 
-func performImport() {
+func performImport2() {
 	settings, err := config.ReadConfig(*configFile)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
-	err = importer.ExtractTarGz(*targetFile, settings.MediaRoot)
+
+	err = importer2.ExtractTarGz(*targetFile, settings.MediaRoot)
 	if err != nil {
 		log.Fatalf("Error extracting archive: %v", err)
 		os.Exit(1)
 	}
 	fmt.Printf("Documents extracted into %q\n", settings.MediaRoot)
+
 	yamlPath := settings.MediaRoot + "/" + exportYaml
-	var data models.Data
-	err = importer.ReadYAML(yamlPath, &data)
+	var data models2.Data
+	err = importer2.ReadYAML(yamlPath, &data)
 
 	if err != nil {
 		fmt.Printf("Error:performImport: %s", err)

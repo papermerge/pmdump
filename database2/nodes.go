@@ -16,9 +16,13 @@ func GetInboxFlatNodes(db *sql.DB, user_id int) ([]models2.FlatNode, error) {
         n.id,
         n.title,
         ct.model AS model,
-        n.title as full_path
+        n.title as full_path,
+        doc.version,
+        doc.file_name,
+        doc.page_count
       FROM core_basetreenode n
       INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
+      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
       WHERE parent_id is NULL and title = '.inbox' AND user_id = ?
 
       UNION ALL
@@ -27,10 +31,14 @@ func GetInboxFlatNodes(db *sql.DB, user_id int) ([]models2.FlatNode, error) {
         n.id,
         n.title,
         ct.model AS model,
-        nt.full_path || '/' || n.title AS full_path
+        nt.full_path || '/' || n.title AS full_path,
+        doc.version,
+        doc.file_name,
+        doc.page_count
       FROM core_basetreenode n
       INNER JOIN node_tree nt ON n.parent_id = nt.id
       INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
+      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
       WHERE n.user_id = ?
     )
     SELECT
@@ -38,7 +46,10 @@ func GetInboxFlatNodes(db *sql.DB, user_id int) ([]models2.FlatNode, error) {
       title,
       model,
       full_path,
-      LENGTH(full_path) AS path_len
+      LENGTH(full_path) AS path_len,
+      version,
+      file_name,
+      page_count
     FROM node_tree
     ORDER BY path_len ASC;
   `
@@ -59,6 +70,9 @@ func GetInboxFlatNodes(db *sql.DB, user_id int) ([]models2.FlatNode, error) {
 			&node.Model,
 			&node.FullPath,
 			&discard,
+			&node.Version,
+			&node.FileName,
+			&node.PageCount,
 		)
 		if err != nil {
 			return nil, err
@@ -77,9 +91,13 @@ func GetHomeFlatNodes(db *sql.DB, user_id int) ([]models2.FlatNode, error) {
         n.id,
         n.title,
         ct.model AS model,
-        n.title as full_path
+        n.title as full_path,
+        doc.version,
+        doc.file_name,
+        doc.page_count
       FROM core_basetreenode n
       INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
+      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
       WHERE parent_id is NULL AND title != '.inbox' AND user_id = ?
 
       UNION ALL
@@ -88,10 +106,14 @@ func GetHomeFlatNodes(db *sql.DB, user_id int) ([]models2.FlatNode, error) {
         n.id,
         n.title,
         ct.model AS MODEL,
-        nt.full_path || '/' || n.title AS full_path
+        nt.full_path || '/' || n.title AS full_path,
+        doc.version,
+        doc.file_name,
+        doc.page_count
       FROM core_basetreenode n
       INNER JOIN node_tree nt ON n.parent_id = nt.id
       INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
+      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
       WHERE n.user_id = ?
     )
     SELECT
@@ -99,7 +121,10 @@ func GetHomeFlatNodes(db *sql.DB, user_id int) ([]models2.FlatNode, error) {
       title,
       model,
       full_path,
-      LENGTH(full_path) AS path_len
+      LENGTH(full_path) AS path_len,
+      version,
+      file_name,
+      page_count
     FROM node_tree
     ORDER BY path_len ASC;
   `
@@ -120,6 +145,9 @@ func GetHomeFlatNodes(db *sql.DB, user_id int) ([]models2.FlatNode, error) {
 			&node.Model,
 			&node.FullPath,
 			&discard,
+			&node.Version,
+			&node.FileName,
+			&node.PageCount,
 		)
 		if err != nil {
 			return nil, err
