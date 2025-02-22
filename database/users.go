@@ -94,6 +94,7 @@ func ImportUserData(
 ) {
 
 	models.ForEachNode(sourceUser.Home, models.UpdateNodeUUID)
+	models.ForEachNode(sourceUser.Inbox, models.UpdateNodeUUID)
 
 	ForEachSourceNode(
 		db,

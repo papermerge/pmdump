@@ -254,43 +254,42 @@ func InsertFolder(
 		}
 	}()
 
-	id, _ := uuid.NewUUID()
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	fmt.Printf("Inserting node.ID=%q node.Title=%q parentID=%q currentTime=%q\n", n.NodeUUID, n.Title, parentID, currentTime)
+	/*
+	   result, err := db.Exec(
+	     "INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+	     id, n.Title, "eng", "folder", userID, parentID, currentTime, currentTime,
+	   )
+	   if err != nil {
+	     return fmt.Errorf(
+	       "insert node %q, parentID %q, userID %q: %v",
+	       n.Title,
+	       parentID,
+	       userID,
+	       err,
+	     )
+	   }
 
-	result, err := db.Exec(
-		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		id, n.Title, "eng", "folder", userID, parentID, currentTime, currentTime,
-	)
-	if err != nil {
-		return fmt.Errorf(
-			"insert node %q, parentID %q, userID %q: %v",
-			n.Title,
-			parentID,
-			userID,
-			err,
-		)
-	}
+	   // Get the last inserted ID
+	   lastInsertedID, err := result.LastInsertId()
+	   if err != nil {
+	     return fmt.Errorf("get last inserted ID %s: %v", n.Title, err)
+	   }
 
-	// Get the last inserted ID
-	lastInsertedID, err := result.LastInsertId()
-	if err != nil {
-		return fmt.Errorf("get last inserted ID %s: %v", n.Title, err)
-	}
-
-	_, err = db.Exec(
-		"INSERT INTO folders (node_id) VALUES (?)",
-		lastInsertedID,
-	)
-	if err != nil {
-		return fmt.Errorf("insert folder %s: %v", n.Title, err)
-	}
-
+	   _, err = db.Exec(
+	     "INSERT INTO folders (node_id) VALUES (?)",
+	     lastInsertedID,
+	   )
+	   if err != nil {
+	     return fmt.Errorf("insert folder %s: %v", n.Title, err)
+	   }
+	*/
 	// Commit the transaction
 	err = tx.Commit()
 	if err != nil {
 		return fmt.Errorf("commit transaction for %s: %v", n.Title, err)
 	}
-
 	return nil
 }
 
