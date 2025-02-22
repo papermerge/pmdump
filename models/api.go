@@ -247,3 +247,13 @@ func GetFilePaths(docs []Node, user_id int, mediaRoot string) ([]FilePath, error
 
 	return paths, nil
 }
+
+func (users TargetUserList) Get(username string) *TargetUser {
+	for i := 0; i < len(users); i++ {
+		if users[i].Username == username {
+			return &users[i]
+		}
+	}
+
+	return nil
+}

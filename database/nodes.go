@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/papermerge/pmdump/models"
 )
 
@@ -194,4 +196,97 @@ func GetUserNodes(db *sql.DB, user *models.User) error {
 	}
 
 	return nil
+}
+
+func ForEachNode(
+	db *sql.DB,
+	n *models.Node,
+	targetRootID uuid.UUID,
+	targetUserID uuid.UUID,
+	op models.TargetNodeOperation,
+) {
+
+	if n.NodeType == models.DocumentType {
+		InsertDocument(db, n, targetRootID, targetUserID)
+	} else {
+		if err := InsertFolder(db, n, targetRootID, targetUserID); err != nil {
+			fmt.Fprintf(os.Stderr, "Node operation error: %v\n", err)
+		}
+	}
+
+	for _, child := range n.Children {
+		ForEachNode(
+			db,
+			child,
+			targetRootID,
+			targetUserID,
+			op,
+		)
+	}
+}
+
+func InsertDocument(
+	db *sql.DB,
+	n *models.Node,
+	targetRootID uuid.UUID,
+	targetUserID uuid.UUID,
+) {
+
+}
+
+func InsertFolder(
+	db *sql.DB,
+	n *models.Node,
+	parentID uuid.UUID,
+	userID uuid.UUID,
+) error {
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Defer a rollback in case of failure
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	id, _ := uuid.NewUUID()
+	currentTime := time.Now().Format("2006-01-02 15:04:05")
+
+	result, err := db.Exec(
+		"INSERT INTO nodes (id, title, lang, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		id, n.Title, "eng", userID, parentID, currentTime, currentTime,
+	)
+	if err != nil {
+		return fmt.Errorf("insert node %s: %v", n.Title, err)
+	}
+
+	// Get the last inserted ID
+	lastInsertedID, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("get last inserted ID %s: %v", n.Title, err)
+	}
+
+	_, err = db.Exec(
+		"INSERT INTO folder (node_id) VALUES (?)",
+		lastInsertedID,
+	)
+	if err != nil {
+		return fmt.Errorf("insert folder %s: %v", n.Title, err)
+	}
+
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("commit transaction for %s: %v", n.Title, err)
+	}
+
+	return nil
+}
+
+func CreateTargetNode(db *sql.DB, userID uuid.UUID, rootID uuid.UUID, source *models.Node) {
+
 }

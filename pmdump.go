@@ -40,16 +40,16 @@ func main() {
 	}
 
 	if args[0] == exportCommand {
-		performExport2()
+		performExport()
 	} else if args[0] == importCommand {
-		performImport2()
+		performImport()
 	} else {
 		fmt.Printf("Unknown command. can be either %q or %q\n", exportCommand, importCommand)
 		os.Exit(1)
 	}
 }
 
-func performExport2() {
+func performExport() {
 	var filePaths []models.FilePath
 	settings, err := config.ReadConfig(*configFile)
 
@@ -126,7 +126,7 @@ func performExport2() {
 	os.Remove(exportYaml)
 }
 
-func performImport2() {
+func performImport() {
 	settings, err := config.ReadConfig(*configFile)
 
 	if err != nil {
@@ -142,12 +142,26 @@ func performImport2() {
 	fmt.Printf("Documents extracted into %q\n", settings.MediaRoot)
 
 	yamlPath := settings.MediaRoot + "/" + exportYaml
-	var data models.Data
-	err = importer.ReadYAML(yamlPath, &data)
+	var sourceData models.Data
+	err = importer.ReadYAML(yamlPath, &sourceData)
 
 	if err != nil {
 		fmt.Printf("Error:performImport: %s", err)
 	}
+	db, err := sql.Open("sqlite3", settings.DatabaseURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	targetUsers, err := database.GetTargetUsers(db)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error while reading target users: %v\n", err)
+	}
+
+	database.InsertUsersData(db, sourceData.Users, targetUsers)
+
 }
 
 func listConfigs() {

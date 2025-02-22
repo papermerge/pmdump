@@ -1,6 +1,10 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"database/sql"
+
+	"github.com/google/uuid"
+)
 
 type NodeType string
 
@@ -8,6 +12,20 @@ const (
 	FolderType   NodeType = "folder"
 	DocumentType NodeType = "document"
 )
+
+/*
+User as read from target database
+Target = Destination = Papermerge 3.4
+*/
+type TargetUser struct {
+	ID       uuid.UUID
+	Username string
+	EMail    string
+	HomeID   uuid.UUID
+	InboxID  uuid.UUID
+}
+
+type TargetUserList []TargetUser
 
 type User struct {
 	ID       int
@@ -70,3 +88,5 @@ type FilePath struct {
 	Source string
 	Dest   string
 }
+
+type TargetNodeOperation func(db *sql.DB, userID uuid.UUID, rootID uuid.UUID, source *Node)
