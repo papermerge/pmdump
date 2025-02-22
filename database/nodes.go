@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/papermerge/pmdump/constants"
 	"github.com/papermerge/pmdump/models"
 )
 
@@ -198,27 +199,27 @@ func GetUserNodes(db *sql.DB, user *models.User) error {
 	return nil
 }
 
-func ForEachNode(
+func ForEachSourceNode(
 	db *sql.DB,
 	n *models.Node,
-	targetRootID uuid.UUID,
+	targetParentID uuid.UUID,
 	targetUserID uuid.UUID,
 	op models.TargetNodeOperation,
 ) {
 
 	if n.NodeType == models.DocumentType {
-		InsertDocument(db, n, targetRootID, targetUserID)
-	} else {
-		if err := InsertFolder(db, n, targetRootID, targetUserID); err != nil {
+		InsertDocument(db, n, targetParentID, targetUserID)
+	} else if n.Title != constants.HOME && n.Title != constants.INBOX {
+		if err := InsertFolder(db, n, targetParentID, targetUserID); err != nil {
 			fmt.Fprintf(os.Stderr, "Node operation error: %v\n", err)
 		}
 	}
 
 	for _, child := range n.Children {
-		ForEachNode(
+		ForEachSourceNode(
 			db,
 			child,
-			targetRootID,
+			n.NodeUUID,
 			targetUserID,
 			op,
 		)

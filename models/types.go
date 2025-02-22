@@ -47,6 +47,7 @@ type FlatNode struct {
 
 type Node struct {
 	ID        int
+	NodeUUID  uuid.UUID
 	Title     string           `yaml:"title"`
 	Children  map[string]*Node `yaml:"children,omitempty"`
 	NodeType  NodeType
@@ -83,6 +84,7 @@ type DocumentPageRow struct {
 }
 
 type NodeOperation func(n *Node, user_id int, docPages []DocumentPageRow, mediaRoot string)
+type NodeQuickOperation func(n *Node)
 
 type FilePath struct {
 	Source string

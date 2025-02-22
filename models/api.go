@@ -133,6 +133,22 @@ func InsertDocVersionsAndPages(
 	n.Versions = versions
 }
 
+func ForEachNode(
+	n *Node,
+	quickOper NodeQuickOperation,
+) {
+
+	quickOper(n)
+
+	for _, child := range n.Children {
+		ForEachNode(child, quickOper)
+	}
+}
+
+func UpdateNodeUUID(n *Node) {
+	n.NodeUUID = uuid.New()
+}
+
 func MakePages(
 	n *Node,
 	user_id int,

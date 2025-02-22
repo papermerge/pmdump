@@ -92,16 +92,19 @@ func ImportUserData(
 	sourceUser models.User,
 	targetUser *models.TargetUser,
 ) {
-	ForEachNode(
+
+	models.ForEachNode(sourceUser.Home, models.UpdateNodeUUID)
+
+	ForEachSourceNode(
 		db,
-		sourceUser.Home,
+		sourceUser.Home, // start here
 		targetUser.HomeID,
 		targetUser.ID,
 		CreateTargetNode,
 	)
-	ForEachNode(
+	ForEachSourceNode(
 		db,
-		sourceUser.Inbox,
+		sourceUser.Inbox, // start here
 		targetUser.InboxID,
 		targetUser.ID,
 		CreateTargetNode,
