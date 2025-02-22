@@ -257,11 +257,17 @@ func InsertFolder(
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
 
 	result, err := db.Exec(
-		"INSERT INTO nodes (id, title, lang, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-		id, n.Title, "eng", userID, parentID, currentTime, currentTime,
+		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		id, n.Title, "eng", "folder", userID, parentID, currentTime, currentTime,
 	)
 	if err != nil {
-		return fmt.Errorf("insert node %s: %v", n.Title, err)
+		return fmt.Errorf(
+			"insert node %q, parentID %q, userID %q: %v",
+			n.Title,
+			parentID,
+			userID,
+			err,
+		)
 	}
 
 	// Get the last inserted ID
@@ -271,7 +277,7 @@ func InsertFolder(
 	}
 
 	_, err = db.Exec(
-		"INSERT INTO folder (node_id) VALUES (?)",
+		"INSERT INTO folders (node_id) VALUES (?)",
 		lastInsertedID,
 	)
 	if err != nil {
