@@ -79,7 +79,12 @@ func InsertUsersData(
 		} else {
 			targetUser, err := CreateTargetUser(db, sourceUsers[i])
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error creating target user for %s: %v\n", sourceUsers[i], err)
+				fmt.Fprintf(
+					os.Stderr,
+					"Error creating target user for %s: %v\n",
+					sourceUsers[i].Username,
+					err,
+				)
 				continue
 			}
 			ImportUserData(db, sourceUsers[i], targetUser)
