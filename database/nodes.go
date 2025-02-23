@@ -225,6 +225,7 @@ func ForEachSourceNode(
 			ForEachSourceNode(
 				db,
 				child,
+				// this is either Home ID or Inbox ID of target user
 				targetParentID,
 				targetUserID,
 				op,
@@ -244,10 +245,71 @@ func ForEachSourceNode(
 func InsertDocument(
 	db *sql.DB,
 	n *models.Node,
-	targetRootID uuid.UUID,
-	targetUserID uuid.UUID,
-) {
+	parentID uuid.UUID,
+	userID uuid.UUID,
+) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
 
+	// Defer a rollback in case of failure
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	noHyphenParentID := strings.ReplaceAll(parentID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+	noHyphenUserID := strings.ReplaceAll(userID.String(), "-", "")
+
+	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	fmt.Printf(
+		"Inserting node.ID=%q node.Title=%q parentID=%q currentTime=%q\n",
+		noHyphenID,
+		n.Title,
+		noHyphenParentID,
+		currentTime,
+	)
+
+	_, err = db.Exec(
+		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		noHyphenID,
+		n.Title,
+		constants.ENG,
+		constants.DOCUMENT,
+		noHyphenUserID,
+		noHyphenParentID,
+		currentTime,
+		currentTime,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"insert node %q, parentID %q, userID %q: %v",
+			n.Title,
+			noHyphenParentID,
+			noHyphenUserID,
+			err,
+		)
+	}
+
+	_, err = db.Exec(
+		"INSERT INTO documents (node_id, ocr, ocr_status) VALUES (?, ?, ?)",
+		noHyphenID,
+		false,
+		constants.UNKNOWN,
+	)
+	if err != nil {
+		return fmt.Errorf("insert document %s: %v", n.Title, err)
+	}
+
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("commit transaction for %s: %v", n.Title, err)
+	}
+	return nil
 }
 
 func InsertFolder(
@@ -286,8 +348,8 @@ func InsertFolder(
 		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		noHyphenID,
 		n.Title,
-		"eng",
-		"folder",
+		constants.ENG,
+		constants.FOLDER,
 		noHyphenUserID,
 		noHyphenParentID,
 		currentTime,

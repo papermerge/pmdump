@@ -22,7 +22,7 @@ func PerformImport(configFile, targetFile, exportYaml string) {
 
 	err = importer.ExtractTarGz(targetFile, settings.MediaRoot)
 	if err != nil {
-		log.Fatalf("Error extracting archive: %v", err)
+		fmt.Fprintf(os.Stderr, "Error extracting archive: %v", err)
 		os.Exit(1)
 	}
 	fmt.Printf("Documents extracted into %q\n", settings.MediaRoot)
