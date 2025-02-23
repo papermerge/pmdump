@@ -209,14 +209,12 @@ func ForEachSourceNode(
 ) {
 
 	if n.NodeType == models.DocumentType {
-		InsertDocument(db, n, targetParentID, targetUserID)
-	} else if n.Title == constants.HOME {
-		fmt.Printf("HomeID=%q\n", n.NodeUUID)
-	} else if n.Title == constants.INBOX {
-		fmt.Printf("InboxID=%q\n", n.NodeUUID)
+		if err := InsertDocument(db, n, targetParentID, targetUserID); err != nil {
+			fmt.Fprintf(os.Stderr, "Document insert error: %v\n", err)
+		}
 	} else {
 		if err := InsertFolder(db, n, targetParentID, targetUserID); err != nil {
-			fmt.Fprintf(os.Stderr, "Node operation error: %v\n", err)
+			fmt.Fprintf(os.Stderr, "Folder insert error: %v\n", err)
 		}
 	}
 
@@ -242,6 +240,81 @@ func ForEachSourceNode(
 	}
 }
 
+func InsertPage(
+	db *sql.DB,
+	docVer models.DocumentVersion,
+	page models.Page,
+) error {
+	noHyphenID := strings.ReplaceAll(page.UUID.String(), "-", "")
+	noHyphenDocumentVersionID := strings.ReplaceAll(docVer.UUID.String(), "-", "")
+
+	_, err := db.Exec(
+		"INSERT INTO pages (id, document_version_id, number, page_count, lang) VALUES (?, ?, ?, ?, ?)",
+		noHyphenID,
+		noHyphenDocumentVersionID,
+		docVer.Number,
+		len(docVer.Pages),
+		constants.ENG,
+	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"insert page ID=%q, number %q failed: %v",
+			noHyphenID,
+			page.Number,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func InsertDocumentVersion(
+	db *sql.DB,
+	n *models.Node,
+	docVer models.DocumentVersion,
+) error {
+	noHyphenID := strings.ReplaceAll(docVer.UUID.String(), "-", "")
+	noHyphenDocumentID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+
+	_, err := db.Exec(
+		"INSERT INTO document_versions (id, document_id, number, file_name, lang, size, page_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		noHyphenID,
+		noHyphenDocumentID,
+		docVer.Number,
+		docVer.FileName,
+		constants.ENG,
+		0,
+		len(docVer.Pages),
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"insert document version %q, number %q, file_name %q failed: %v",
+			noHyphenID,
+			docVer.Number,
+			docVer.FileName,
+			err,
+		)
+	}
+
+	for _, page := range docVer.Pages {
+		err = InsertPage(
+			db, docVer, page,
+		)
+		if err != nil {
+			return fmt.Errorf(
+				"insert page for document version %q, number %q, file_name %q failed: %v",
+				noHyphenID,
+				docVer.Number,
+				docVer.FileName,
+				err,
+			)
+		}
+	}
+
+	return nil
+}
+
 func InsertDocument(
 	db *sql.DB,
 	n *models.Node,
@@ -265,13 +338,6 @@ func InsertDocument(
 	noHyphenUserID := strings.ReplaceAll(userID.String(), "-", "")
 
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
-	fmt.Printf(
-		"Inserting node.ID=%q node.Title=%q parentID=%q currentTime=%q\n",
-		noHyphenID,
-		n.Title,
-		noHyphenParentID,
-		currentTime,
-	)
 
 	_, err = db.Exec(
 		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -302,6 +368,22 @@ func InsertDocument(
 	)
 	if err != nil {
 		return fmt.Errorf("insert document %s: %v", n.Title, err)
+	}
+
+	for _, docVer := range n.Versions {
+		err = InsertDocumentVersion(
+			db, n, docVer,
+		)
+		if err != nil {
+			return fmt.Errorf(
+				"insert document %q, documentID %q, parentID %q, userID %q failed: %v",
+				n.Title,
+				noHyphenID,
+				noHyphenParentID,
+				noHyphenUserID,
+				err,
+			)
+		}
 	}
 
 	// Commit the transaction
@@ -336,13 +418,6 @@ func InsertFolder(
 	noHyphenUserID := strings.ReplaceAll(userID.String(), "-", "")
 
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
-	fmt.Printf(
-		"Inserting node.ID=%q node.Title=%q parentID=%q currentTime=%q\n",
-		noHyphenID,
-		n.Title,
-		noHyphenParentID,
-		currentTime,
-	)
 
 	_, err = db.Exec(
 		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
