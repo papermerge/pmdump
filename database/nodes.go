@@ -213,8 +213,10 @@ func ForEachSourceNode(
 			fmt.Fprintf(os.Stderr, "Document insert error: %v\n", err)
 		}
 	} else {
-		if err := InsertFolder(db, n, targetParentID, targetUserID); err != nil {
-			fmt.Fprintf(os.Stderr, "Folder insert error: %v\n", err)
+		if n.Title != constants.INBOX && n.Title != constants.HOME {
+			if err := InsertFolder(db, n, targetParentID, targetUserID); err != nil {
+				fmt.Fprintf(os.Stderr, "Folder insert error: %v\n", err)
+			}
 		}
 	}
 
