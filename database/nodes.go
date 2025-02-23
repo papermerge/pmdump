@@ -254,7 +254,7 @@ func InsertPage(
 		"INSERT INTO pages (id, document_version_id, number, page_count, lang) VALUES (?, ?, ?, ?, ?)",
 		noHyphenID,
 		noHyphenDocumentVersionID,
-		docVer.Number,
+		page.Number,
 		len(docVer.Pages),
 		constants.ENG,
 	)
