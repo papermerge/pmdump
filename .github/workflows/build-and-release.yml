@@ -1,0 +1,76 @@
+name: Build and Release PMDump
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build Go Application
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build for multiple platforms
+        run: |
+          mkdir -p dist
+          GOOS=linux GOARCH=amd64 go build -o dist/pmdump-linux-amd64 .
+          GOOS=linux GOARCH=arm64 go build -o dist/pmdump-linux-arm64 .
+          GOOS=darwin GOARCH=amd64 go build -o dist/pmdump-macos-amd64 .
+          GOOS=darwin GOARCH=arm64 go build -o dist/pmdump-macos-arm64 .
+          GOOS=windows GOARCH=amd64 go build -o dist/pmdump-windows-amd64.exe .
+
+      - name: Archive binaries
+        run: |
+          cd dist
+          tar -czvf pmdump-linux-amd64.tar.gz pmdump-linux-amd64
+          tar -czvf pmdump-linux-arm64.tar.gz pmdump-linux-arm64
+          tar -czvf pmdump-macos-amd64.tar.gz pmdump-macos-amd64
+          tar -czvf pmdump-macos-arm64.tar.gz pmdump-macos-arm64
+          zip pmdump-windows-amd64.zip pmdump-windows-amd64.exe
+
+      - name: Upload binaries as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: dist/*
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for creating releases
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download built binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            New release of PMDump.
+            - Built for multiple platforms.
+          draft: false
+          prerelease: false
+          files: dist/*
