@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build Go Application
+    name: Build PMDump
     runs-on: ubuntu-latest
 
     steps:
