@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -209,20 +210,34 @@ func ForEachSourceNode(
 
 	if n.NodeType == models.DocumentType {
 		InsertDocument(db, n, targetParentID, targetUserID)
-	} else if n.Title != constants.HOME && n.Title != constants.INBOX {
+	} else if n.Title == constants.HOME {
+		fmt.Printf("HomeID=%q\n", n.NodeUUID)
+	} else if n.Title == constants.INBOX {
+		fmt.Printf("InboxID=%q\n", n.NodeUUID)
+	} else {
 		if err := InsertFolder(db, n, targetParentID, targetUserID); err != nil {
 			fmt.Fprintf(os.Stderr, "Node operation error: %v\n", err)
 		}
 	}
 
 	for _, child := range n.Children {
-		ForEachSourceNode(
-			db,
-			child,
-			n.NodeUUID,
-			targetUserID,
-			op,
-		)
+		if n.Title == constants.HOME || n.Title == constants.INBOX {
+			ForEachSourceNode(
+				db,
+				child,
+				targetParentID,
+				targetUserID,
+				op,
+			)
+		} else {
+			ForEachSourceNode(
+				db,
+				child,
+				n.NodeUUID,
+				targetUserID,
+				op,
+			)
+		}
 	}
 }
 
@@ -254,37 +269,47 @@ func InsertFolder(
 		}
 	}()
 
+	noHyphenParentID := strings.ReplaceAll(parentID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+	noHyphenUserID := strings.ReplaceAll(userID.String(), "-", "")
+
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
-	fmt.Printf("Inserting node.ID=%q node.Title=%q parentID=%q currentTime=%q\n", n.NodeUUID, n.Title, parentID, currentTime)
-	/*
-	   result, err := db.Exec(
-	     "INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-	     id, n.Title, "eng", "folder", userID, parentID, currentTime, currentTime,
-	   )
-	   if err != nil {
-	     return fmt.Errorf(
-	       "insert node %q, parentID %q, userID %q: %v",
-	       n.Title,
-	       parentID,
-	       userID,
-	       err,
-	     )
-	   }
+	fmt.Printf(
+		"Inserting node.ID=%q node.Title=%q parentID=%q currentTime=%q\n",
+		noHyphenID,
+		n.Title,
+		noHyphenParentID,
+		currentTime,
+	)
 
-	   // Get the last inserted ID
-	   lastInsertedID, err := result.LastInsertId()
-	   if err != nil {
-	     return fmt.Errorf("get last inserted ID %s: %v", n.Title, err)
-	   }
+	_, err = db.Exec(
+		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		noHyphenID,
+		n.Title,
+		"eng",
+		"folder",
+		noHyphenUserID,
+		noHyphenParentID,
+		currentTime,
+		currentTime,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"insert node %q, parentID %q, userID %q: %v",
+			n.Title,
+			noHyphenParentID,
+			noHyphenUserID,
+			err,
+		)
+	}
+	_, err = db.Exec(
+		"INSERT INTO folders (node_id) VALUES (?)",
+		noHyphenID,
+	)
+	if err != nil {
+		return fmt.Errorf("insert folder %s: %v", n.Title, err)
+	}
 
-	   _, err = db.Exec(
-	     "INSERT INTO folders (node_id) VALUES (?)",
-	     lastInsertedID,
-	   )
-	   if err != nil {
-	     return fmt.Errorf("insert folder %s: %v", n.Title, err)
-	   }
-	*/
 	// Commit the transaction
 	err = tx.Commit()
 	if err != nil {
