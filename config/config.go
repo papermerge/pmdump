@@ -10,6 +10,7 @@ type Config struct {
 	DatabaseURL string `yaml:"database_url"`
 	MediaRoot   string `yaml:"media_root"`
 	TargetFile  string `yaml:"target_file"` // full path to the target archive (tar gz file)
+	AppVersion  string `yaml:"app_version"` // Papermerge DMS version this config is intended for
 }
 
 func ReadConfig(fileName string) (*Config, error) {

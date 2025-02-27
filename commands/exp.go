@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"github.com/papermerge/pmdump/database"
 	"github.com/papermerge/pmdump/exporter"
 	"github.com/papermerge/pmdump/models"
+	"github.com/papermerge/pmdump/types"
 )
 
 func PerformExport(configFile, targetFile, exportYaml string) {
@@ -21,11 +21,12 @@ func PerformExport(configFile, targetFile, exportYaml string) {
 		os.Exit(1)
 	}
 
-	db, err := sql.Open("sqlite3", settings.DatabaseURL)
+	db, err := database.Open(settings.DatabaseURL, types.AppVersion(settings.AppVersion))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Error opening dburl %s: %v", settings.DatabaseURL, err)
+		os.Exit(1)
 	}
-	defer db.Close()
+	defer db.DB.Close()
 
 	users, err := database.GetUsers(db)
 	if err != nil {

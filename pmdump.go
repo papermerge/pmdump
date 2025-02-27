@@ -6,8 +6,6 @@ import (
 	"os"
 
 	"github.com/papermerge/pmdump/commands"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var configFile = flag.String("c", "source.yaml", "path to config file")

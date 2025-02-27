@@ -1,4 +1,4 @@
-package database
+package sqlite_app_v2_0
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 	"github.com/papermerge/pmdump/models"
 )
 
-func GetDocumentPageRows(db *sql.DB, user_id int) ([]models.DocumentPageRow, error) {
+func GetDocumentPageRows(db *sql.DB, user_id interface{}) ([]models.DocumentPageRow, error) {
 	query := `
     SELECT p.id,
       p.number,
