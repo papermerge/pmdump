@@ -76,3 +76,14 @@ func GetUserNodes(db *sql.DB, appVer types.AppVersion, user *models.User) error 
 
 	return fmt.Errorf("GetUserNodes not implemented for app version %s\n", appVer)
 }
+
+func GetDocumentPageRows(db *sql.DB, appVer types.AppVersion, user_id interface{}) ([]models.DocumentPageRow, error) {
+	if appVer == types.V2_0 {
+		return postgres_app_v2_0.GetDocumentPageRows(db, user_id)
+	}
+	if appVer == types.V3_3 {
+		return postgres_app_v3_3.GetDocumentPageRows(db, user_id)
+	}
+
+	return nil, fmt.Errorf("GetDocumentPageRows not implemented for app version %s\n", appVer)
+}

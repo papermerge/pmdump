@@ -15,30 +15,22 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
       SELECT
         n.id,
         n.title,
-        ct.model AS model,
-        n.title as full_path,
-        doc.version,
-        doc.file_name,
-        doc.page_count
-      FROM core_basetreenode n
-      INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
-      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
-      WHERE parent_id is NULL and title = '.inbox' AND user_id = ?
+        n.ctype AS model,
+        n.title as full_path
+      FROM nodes n
+      LEFT JOIN documents doc ON doc.node_id = n.id
+      WHERE parent_id is NULL and title = 'inbox' AND user_id = ?
 
       UNION ALL
 
       SELECT
         n.id,
         n.title,
-        ct.model AS model,
-        nt.full_path || '/' || n.title AS full_path,
-        doc.version,
-        doc.file_name,
-        doc.page_count
-      FROM core_basetreenode n
+        n.ctype AS model,
+        nt.full_path || '/' || n.title AS full_path
+      FROM nodes n
       INNER JOIN node_tree nt ON n.parent_id = nt.id
-      INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
-      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
+      LEFT JOIN documents doc ON doc.node_id = n.id
       WHERE n.user_id = ?
     )
     SELECT
@@ -46,10 +38,7 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
       title,
       model,
       full_path,
-      LENGTH(full_path) AS path_len,
-      version,
-      file_name,
-      page_count
+      LENGTH(full_path) AS path_len
     FROM node_tree
     ORDER BY path_len ASC;
   `
@@ -60,7 +49,6 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
 	defer rows.Close()
 
 	var nodes []models.FlatNode
-	var discard int
 
 	for rows.Next() {
 		var node models.FlatNode
@@ -69,10 +57,6 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
 			&node.Title,
 			&node.Model,
 			&node.FullPath,
-			&discard,
-			&node.Version,
-			&node.FileName,
-			&node.PageCount,
 		)
 		if err != nil {
 			return nil, err
@@ -90,30 +74,22 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
       SELECT
         n.id,
         n.title,
-        ct.model AS model,
-        n.title as full_path,
-        doc.version,
-        doc.file_name,
-        doc.page_count
-      FROM core_basetreenode n
-      INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
-      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
-      WHERE parent_id is NULL AND title != '.inbox' AND user_id = ?
+        n.ctype AS model,
+        n.title as full_path
+      FROM nodes n
+      LEFT JOIN documents doc ON doc.node_id = n.id
+      WHERE parent_id is NULL AND title != 'inbox' AND user_id = ?
 
       UNION ALL
 
       SELECT
         n.id,
         n.title,
-        ct.model AS MODEL,
-        nt.full_path || '/' || n.title AS full_path,
-        doc.version,
-        doc.file_name,
-        doc.page_count
-      FROM core_basetreenode n
+        n.ctype AS MODEL,
+        nt.full_path || '/' || n.title AS full_path
+      FROM nodes n
       INNER JOIN node_tree nt ON n.parent_id = nt.id
-      INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
-      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
+      LEFT JOIN documents doc ON doc.node_id = n.id
       WHERE n.user_id = ?
     )
     SELECT
@@ -121,10 +97,7 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
       title,
       model,
       full_path,
-      LENGTH(full_path) AS path_len,
-      version,
-      file_name,
-      page_count
+      LENGTH(full_path) AS path_len
     FROM node_tree
     ORDER BY path_len ASC;
   `
@@ -135,7 +108,6 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
 	defer rows.Close()
 
 	var nodes []models.FlatNode
-	var discard int
 
 	for rows.Next() {
 		var node models.FlatNode
@@ -144,10 +116,6 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
 			&node.Title,
 			&node.Model,
 			&node.FullPath,
-			&discard,
-			&node.Version,
-			&node.FileName,
-			&node.PageCount,
 		)
 		if err != nil {
 			return nil, err

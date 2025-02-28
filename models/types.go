@@ -27,8 +27,16 @@ type TargetUser struct {
 
 type TargetUserList []TargetUser
 
+type BaseUser struct {
+	Username string
+	EMail    string
+	Home     *Node
+	Inbox    *Node
+}
+
 type User struct {
 	ID       int
+	UUID     uuid.UUID
 	Username string
 	EMail    string
 	Home     *Node

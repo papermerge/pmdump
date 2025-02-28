@@ -10,6 +10,15 @@ const (
 	V3_4 AppVersion = "3.4"
 )
 
+var AppVersionsForExport = []AppVersion{
+	V2_0,
+	V2_1,
+	V3_0,
+	V3_1,
+	V3_2,
+	V3_3,
+}
+
 const (
 	SQLite   DBType = "sqlite"
 	Postgres DBType = "postgres"

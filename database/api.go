@@ -16,7 +16,6 @@ func Open(dburl string, appVer types.AppVersion) (*types.DBConn, error) {
 
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing dburl %s: %v", dburl, err)
-
 	}
 
 	if strings.HasPrefix(parsedDBURL.Scheme, "sqlite") {
@@ -59,7 +58,7 @@ func GetUsers(db *types.DBConn) ([]models.User, error) {
 		return postgres_db.GetUsers(db.DB, db.AppVersion)
 	}
 
-	return nil, fmt.Errorf("GetUsers: DBType %s not supported\n", db.DBType)
+	return nil, fmt.Errorf("GetUsers: DBType %s not supported", db.DBType)
 }
 
 func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) ([]models.FlatNode, error) {
@@ -71,7 +70,7 @@ func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) ([]models.FlatNode,
 		return postgres_db.GetHomeFlatNodes(db.DB, db.AppVersion, user_id)
 	}
 
-	return nil, fmt.Errorf("GetHomeFlatNodes: DBType %s not supported\n", db.DBType)
+	return nil, fmt.Errorf("GetHomeFlatNodes: DBType %s not supported", db.DBType)
 }
 
 func GetInboxFlatNodes(db *types.DBConn, user_id interface{}) ([]models.FlatNode, error) {
@@ -83,7 +82,7 @@ func GetInboxFlatNodes(db *types.DBConn, user_id interface{}) ([]models.FlatNode
 		return postgres_db.GetInboxFlatNodes(db.DB, db.AppVersion, user_id)
 	}
 
-	return nil, fmt.Errorf("GetInboxFlatNodes: DBType %s not supported\n", db.DBType)
+	return nil, fmt.Errorf("GetInboxFlatNodes: DBType %s not supported", db.DBType)
 }
 
 func GetUserNodes(db *types.DBConn, user *models.User) error {
@@ -95,5 +94,17 @@ func GetUserNodes(db *types.DBConn, user *models.User) error {
 		return postgres_db.GetUserNodes(db.DB, db.AppVersion, user)
 	}
 
-	return fmt.Errorf("GetUserNodes: DBType %s not supported\n", db.DBType)
+	return fmt.Errorf("GetUserNodes: DBType %s not supported", db.DBType)
+}
+
+func GetDocumentPageRows(db *types.DBConn, user_id interface{}) ([]models.DocumentPageRow, error) {
+	if db.DBType == types.SQLite {
+		return sqlite_db.GetDocumentPageRows(db.DB, db.AppVersion, user_id)
+	}
+
+	if db.DBType == types.Postgres {
+		return postgres_db.GetDocumentPageRows(db.DB, db.AppVersion, user_id)
+	}
+
+	return nil, fmt.Errorf("GetUserNodes: DBType %s not supported", db.DBType)
 }

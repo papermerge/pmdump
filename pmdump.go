@@ -27,7 +27,7 @@ func main() {
 	}
 
 	if len(args) == 0 {
-		fmt.Printf("Missing command: can be either %q or %q\n", exportCommand, importCommand)
+		fmt.Fprintf(os.Stderr, "Missing command: can be either %q or %q\n", exportCommand, importCommand)
 		os.Exit(1)
 	}
 
@@ -36,7 +36,13 @@ func main() {
 	} else if args[0] == importCommand {
 		commands.PerformImport(*configFile, *targetFile, exportYaml)
 	} else {
-		fmt.Printf("Unknown command. can be either %q or %q\n", exportCommand, importCommand)
+		fmt.Fprintf(
+			os.Stderr,
+			"Unknown command %q. Can be either %q or %q\n",
+			args[0],
+			exportCommand,
+			importCommand,
+		)
 		os.Exit(1)
 	}
 }

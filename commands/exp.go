@@ -3,7 +3,9 @@ package commands
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/papermerge/pmdump/config"
 	"github.com/papermerge/pmdump/database"
@@ -17,20 +19,26 @@ func PerformExport(configFile, targetFile, exportYaml string) {
 	settings, err := config.ReadConfig(configFile)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", configFile, err)
+		os.Exit(1)
+	}
+
+	if _, err := validExportConfig(settings); err != nil {
+		fmt.Fprintf(os.Stderr, "Validation Error: %v\n", err)
 		os.Exit(1)
 	}
 
 	db, err := database.Open(settings.DatabaseURL, types.AppVersion(settings.AppVersion))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening dburl %s: %v", settings.DatabaseURL, err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 	defer db.DB.Close()
 
 	users, err := database.GetUsers(db)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
 
 	for i := 0; i < len(users); i++ {
@@ -88,4 +96,49 @@ func PerformExport(configFile, targetFile, exportYaml string) {
 		return
 	}
 	os.Remove(exportYaml)
+}
+
+func validExportConfig(settings *config.Config) (bool, error) {
+
+	if !contains(types.AppVersionsForExport, types.AppVersion(settings.AppVersion)) {
+		return false, fmt.Errorf("AppVersion %q not supported", settings.AppVersion)
+	}
+
+	parsedDBURL, err := url.Parse(settings.DatabaseURL)
+
+	if err != nil {
+		return false, fmt.Errorf("Error parsing dburl %s: %v", settings.DatabaseURL, err)
+	}
+
+	if strings.HasPrefix(parsedDBURL.Scheme, "postgres") && settings.AppVersion == string(types.V2_0) {
+		errMsg := "Export of Papermerge DMS v2.0 and Postgres database is not implemented.\n" +
+			"In case you need this feature please open a ticket https://github.com/ciur/papermerge\n" +
+			"In the ticket post docker compose file with your configurations."
+		return false, fmt.Errorf(errMsg)
+	}
+
+	if strings.HasPrefix(parsedDBURL.Scheme, "maria") && settings.AppVersion == string(types.V2_0) {
+		errMsg := "Export of Papermerge DMS v2.0 and MariaDB database is not implemented.\n" +
+			"In case you need this feature please open a ticket https://github.com/ciur/papermerge\n" +
+			"In the ticket post docker compose file with your configurations."
+		return false, fmt.Errorf(errMsg)
+	}
+
+	if strings.HasPrefix(parsedDBURL.Scheme, "my") && settings.AppVersion == string(types.V2_0) {
+		errMsg := "Export of Papermerge DMS v2.0 and MySQL database is not implemented.\n" +
+			"In case you need this feature please open a ticket https://github.com/ciur/papermerge\n" +
+			"In the ticket post docker compose file with your configurations."
+		return false, fmt.Errorf(errMsg)
+	}
+
+	return true, nil
+}
+
+func contains(slice []types.AppVersion, value types.AppVersion) bool {
+	for _, v := range slice {
+		if v == value {
+			return true
+		}
+	}
+	return false
 }

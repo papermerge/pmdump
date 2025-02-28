@@ -19,4 +19,5 @@ func ListConfigs(configFile, targetFile string) {
 	fmt.Printf("Database URL: %s\n", settings.DatabaseURL)
 	fmt.Printf("Media Root: %s\n", settings.MediaRoot)
 	fmt.Printf("Target File: %s\n", targetFile)
+	fmt.Printf("App Version: %s\n", settings.AppVersion)
 }
