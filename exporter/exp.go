@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	exporter_app_v2_0 "github.com/papermerge/pmdump/exporter/app_v2_0"
+	exporter_app_v3_3 "github.com/papermerge/pmdump/exporter/app_v3_3"
 	"github.com/papermerge/pmdump/types"
 )
 
@@ -17,7 +18,7 @@ func CreateYAML(
 		return exporter_app_v2_0.CreateYAML(fileName, users)
 
 	case types.V3_3:
-		return exporter_app_v2_0.CreateYAML(fileName, users)
+		return exporter_app_v3_3.CreateYAML(fileName, users)
 	}
 
 	return fmt.Errorf("CreateYaml: app version %q not supported", appVersion)

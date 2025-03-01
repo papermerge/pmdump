@@ -9,8 +9,10 @@ import (
 
 func CreateYAML(
 	fileName string,
-	users []models.User,
+	u interface{},
 ) error {
+
+	users := u.(models.Users)
 
 	file, err := os.Create(fileName)
 	if err != nil {

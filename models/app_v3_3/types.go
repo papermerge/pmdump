@@ -76,7 +76,7 @@ type DocumentVersion struct {
 
 type Page struct {
 	UUID   uuid.UUID
-	Text   string
+	Text   *string
 	Number int
 }
 
@@ -87,7 +87,7 @@ type Data struct {
 type DocumentPageRow struct {
 	PageID            uuid.UUID
 	PageNumber        int
-	Text              string
+	Text              *string
 	DocumentID        uuid.UUID
 	DocumentVersionID uuid.UUID
 }

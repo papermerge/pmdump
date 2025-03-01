@@ -7,7 +7,7 @@ import (
 	models "github.com/papermerge/pmdump/models/app_v3_3"
 )
 
-func GetDocumentPageRows(db *sql.DB, user_id interface{}) ([]models.DocumentPageRow, error) {
+func GetDocumentPageRows(db *sql.DB, user_id interface{}) (models.DocumentPageRows, error) {
 	query := `
     SELECT p.id,
       p.number,
@@ -29,7 +29,7 @@ func GetDocumentPageRows(db *sql.DB, user_id interface{}) ([]models.DocumentPage
 	}
 	defer rows.Close()
 
-	var entries []models.DocumentPageRow
+	var entries models.DocumentPageRows // plural
 
 	for rows.Next() {
 		var entry models.DocumentPageRow

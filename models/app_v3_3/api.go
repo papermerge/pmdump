@@ -190,6 +190,7 @@ func MakePages(
 	}
 
 	for _, pageFile := range pageFiles {
+		var text string
 		if !pageFile.IsDir() {
 			// cut '.txt' part
 			fullName := pageFile.Name()
@@ -206,11 +207,11 @@ func MakePages(
 			if err != nil {
 				fmt.Printf("Error: %v", err)
 			}
-
+			text = string(data)
 			pages = append(pages, Page{
 				Number: pageNumber,
 				UUID:   uuid.New(),
-				Text:   string(data),
+				Text:   &text,
 			})
 		}
 	}
