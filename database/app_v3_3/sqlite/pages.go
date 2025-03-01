@@ -3,6 +3,7 @@ package sqlite_app_v3_3
 import (
 	"database/sql"
 
+	_ "github.com/mattn/go-sqlite3"
 	models "github.com/papermerge/pmdump/models/app_v3_3"
 )
 

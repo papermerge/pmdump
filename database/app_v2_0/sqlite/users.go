@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	_ "github.com/mattn/go-sqlite3"
 	models "github.com/papermerge/pmdump/models/app_v2_0"
 )
 

@@ -5,6 +5,7 @@ import (
 
 	database_app_v2_0 "github.com/papermerge/pmdump/database/app_v2_0"
 	database_app_v3_3 "github.com/papermerge/pmdump/database/app_v3_3"
+	database_app_v3_4 "github.com/papermerge/pmdump/database/app_v3_4"
 
 	"github.com/papermerge/pmdump/types"
 )
@@ -78,4 +79,20 @@ func GetDocumentPageRows(db *types.DBConn, user_id interface{}) (interface{}, er
 	)
 
 	return nil, err
+}
+
+func GetTargetUsers(db *types.DBConn) (interface{}, error) {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.GetTargetUsers(db)
+	}
+	return nil, fmt.Errorf("database GetTargetUsers: app version %q not supported", db.AppVersion)
+}
+
+func InsertUsersData(db *types.DBConn, sourceUsers interface{}, targetUsers interface{}) (interface{}, error) {
+	switch db.AppVersion {
+	case types.V3_4:
+		database_app_v3_4.InsertUsersData(db, sourceUsers, targetUsers)
+	}
+	return nil, fmt.Errorf("database InsertUserData: app version %q not supported", db.AppVersion)
 }

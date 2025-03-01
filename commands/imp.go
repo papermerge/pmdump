@@ -1,15 +1,15 @@
 package commands
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/papermerge/pmdump/config"
-	database "github.com/papermerge/pmdump/database/app_v3_3"
+	"github.com/papermerge/pmdump/database"
 	"github.com/papermerge/pmdump/importer"
-	"github.com/papermerge/pmdump/models"
+	models "github.com/papermerge/pmdump/models/app_v3_3"
+	"github.com/papermerge/pmdump/types"
 )
 
 func PerformImport(configFile, targetFile, exportYaml string) {
@@ -34,11 +34,11 @@ func PerformImport(configFile, targetFile, exportYaml string) {
 	if err != nil {
 		fmt.Printf("Error:performImport: %s", err)
 	}
-	db, err := sql.Open("sqlite3", settings.DatabaseURL)
+	db, err := database.Open(settings.DatabaseURL, types.AppVersion(settings.AppVersion))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer db.DB.Close()
 
 	targetUsers, err := database.GetTargetUsers(db)
 
@@ -48,5 +48,4 @@ func PerformImport(configFile, targetFile, exportYaml string) {
 	}
 
 	database.InsertUsersData(db, sourceData.Users, targetUsers)
-
 }

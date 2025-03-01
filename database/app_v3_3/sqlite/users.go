@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
+	_ "github.com/mattn/go-sqlite3"
 	models "github.com/papermerge/pmdump/models/app_v3_3"
 )
 
-func GetUsers(db *sql.DB) ([]models.User, error) {
+func GetUsers(db *sql.DB) (models.Users, error) {
 	rows, err := db.Query("SELECT id, username, email FROM users")
 	if err != nil {
 		return nil, err
