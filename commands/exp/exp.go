@@ -24,9 +24,9 @@ func PerformExport(settings config.Config, targetFile, exportYaml string) {
 
 	switch settings.AppVersion {
 	case string(types.V2_0):
-		exporter_app_v2_0.PerformExport(settings, targetFile, exportYaml)
+		filePaths = exporter_app_v2_0.PerformExport(settings, targetFile, exportYaml)
 	case string(types.V3_3):
-		exporter_app_v3_3.PerformExport(settings, targetFile, exportYaml)
+		filePaths = exporter_app_v3_3.PerformExport(settings, targetFile, exportYaml)
 	default:
 		supported_versions := []types.AppVersion{
 			types.V2_0, types.V2_1,

@@ -2,7 +2,6 @@ package exporter_app_v3_3
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/papermerge/pmdump/config"
@@ -12,7 +11,11 @@ import (
 	"github.com/papermerge/pmdump/types"
 )
 
-func PerformExport(settings config.Config, targetFile, exportYaml string) {
+func PerformExport(
+	settings config.Config,
+	targetFile,
+	exportYaml string,
+) []types.FilePath {
 	var filePaths []types.FilePath
 
 	db, err := database.Open(settings.DatabaseURL, types.AppVersion(settings.AppVersion))
@@ -83,10 +86,5 @@ func PerformExport(settings config.Config, targetFile, exportYaml string) {
 
 	filePaths = append(filePaths, types.FilePath{Source: exportYaml, Dest: exportYaml})
 
-	err = exporter.CreateTarGz(targetFile, filePaths)
-	if err != nil {
-		log.Fatalf("Error creating archive: %v", err)
-		return
-	}
-	os.Remove(exportYaml)
+	return filePaths
 }
