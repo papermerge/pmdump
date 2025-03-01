@@ -7,10 +7,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/papermerge/pmdump/models"
+	"github.com/papermerge/pmdump/types"
 )
 
-func CreateTarGz(outputFilename string, paths []models.FilePath) error {
+func CreateTarGz(outputFilename string, paths []types.FilePath) error {
 	// Create output file
 	outFile, err := os.Create(outputFilename)
 	if err != nil {
@@ -37,7 +37,7 @@ func CreateTarGz(outputFilename string, paths []models.FilePath) error {
 	return nil
 }
 
-func addFileToTar(tw *tar.Writer, path models.FilePath) error {
+func addFileToTar(tw *tar.Writer, path types.FilePath) error {
 	// Open the file
 	file, err := os.Open(path.Source)
 	if err != nil {

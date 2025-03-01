@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/papermerge/pmdump/commands"
+	"github.com/papermerge/pmdump/config"
 )
 
 var configFile = flag.String("c", "source.yaml", "path to config file")
@@ -21,6 +22,13 @@ func main() {
 
 	args := flag.Args()
 
+	settings, err := config.ReadConfig(*configFile)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", configFile, err)
+		os.Exit(1)
+	}
+
 	if *listConfigurations {
 		commands.ListConfigs(*configFile, *targetFile)
 		os.Exit(0)
@@ -32,7 +40,7 @@ func main() {
 	}
 
 	if args[0] == exportCommand {
-		commands.PerformExport(*configFile, *targetFile, exportYaml)
+		commands.PerformExport(*settings, *targetFile, exportYaml)
 	} else if args[0] == importCommand {
 		commands.PerformImport(*configFile, *targetFile, exportYaml)
 	} else {

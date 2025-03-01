@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/papermerge/pmdump/config"
-	"github.com/papermerge/pmdump/database"
+	database "github.com/papermerge/pmdump/database/app_v3_3"
 	"github.com/papermerge/pmdump/importer"
 	"github.com/papermerge/pmdump/models"
 )

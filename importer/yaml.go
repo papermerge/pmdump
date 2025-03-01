@@ -3,7 +3,7 @@ package importer
 import (
 	"os"
 
-	"github.com/papermerge/pmdump/models"
+	models "github.com/papermerge/pmdump/models/app_v3_3"
 	"gopkg.in/yaml.v3"
 )
 

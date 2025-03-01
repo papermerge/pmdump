@@ -2,109 +2,80 @@ package database
 
 import (
 	"fmt"
-	"net/url"
-	"strings"
 
-	postgres_db "github.com/papermerge/pmdump/database/postgres"
-	sqlite_db "github.com/papermerge/pmdump/database/sqlite"
-	"github.com/papermerge/pmdump/models"
+	database_app_v2_0 "github.com/papermerge/pmdump/database/app_v2_0"
+	database_app_v3_3 "github.com/papermerge/pmdump/database/app_v3_3"
+
 	"github.com/papermerge/pmdump/types"
 )
 
 func Open(dburl string, appVer types.AppVersion) (*types.DBConn, error) {
-	parsedDBURL, err := url.Parse(dburl)
-
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing dburl %s: %v", dburl, err)
+	switch appVer {
+	case types.V2_0:
+		return database_app_v2_0.Open(dburl, appVer)
+	case types.V3_3:
+		return database_app_v3_3.Open(dburl, appVer)
 	}
 
-	if strings.HasPrefix(parsedDBURL.Scheme, "sqlite") {
-		db, err := sqlite_db.Open(parsedDBURL.Path)
-		if err != nil {
-			return nil, err
-		}
-		dbconn := types.DBConn{
-			AppVersion: appVer,
-			DBType:     types.SQLite,
-			DB:         db,
-		}
-
-		return &dbconn, nil
-	}
-
-	if parsedDBURL.Scheme == "postgres" {
-		db, err := postgres_db.Open(dburl)
-		if err != nil {
-			return nil, err
-		}
-		dbconn := types.DBConn{
-			AppVersion: appVer,
-			DBType:     types.Postgres,
-			DB:         db,
-		}
-
-		return &dbconn, nil
-	}
-
-	return nil, fmt.Errorf("unsupported schema %s in %s", parsedDBURL.Scheme, dburl)
+	return nil, fmt.Errorf("database open: app version %q not supported", appVer)
 }
 
-func GetUsers(db *types.DBConn) ([]models.User, error) {
-	if db.DBType == types.SQLite {
-		return sqlite_db.GetUsers(db.DB, db.AppVersion)
+func GetUsers(db *types.DBConn) (interface{}, error) {
+	switch db.AppVersion {
+	case types.V2_0:
+		return database_app_v2_0.GetUsers(db)
+	case types.V3_3:
+		return database_app_v3_3.GetUsers(db)
 	}
 
-	if db.DBType == types.Postgres {
-		return postgres_db.GetUsers(db.DB, db.AppVersion)
-	}
-
-	return nil, fmt.Errorf("GetUsers: DBType %s not supported", db.DBType)
+	return nil, fmt.Errorf("database GetUsers: app version %q not supported", db.AppVersion)
 }
 
-func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) ([]models.FlatNode, error) {
-	if db.DBType == types.SQLite {
-		return sqlite_db.GetHomeFlatNodes(db.DB, db.AppVersion, user_id)
+func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, error) {
+	switch db.AppVersion {
+	case types.V2_0:
+		return database_app_v2_0.GetHomeFlatNodes(db, user_id)
+	case types.V3_3:
+		return database_app_v3_3.GetHomeFlatNodes(db, user_id)
 	}
 
-	if db.DBType == types.Postgres {
-		return postgres_db.GetHomeFlatNodes(db.DB, db.AppVersion, user_id)
-	}
-
-	return nil, fmt.Errorf("GetHomeFlatNodes: DBType %s not supported", db.DBType)
+	return nil, fmt.Errorf("database GetHomeFlatNodes: app version %q not supported", db.AppVersion)
 }
 
-func GetInboxFlatNodes(db *types.DBConn, user_id interface{}) ([]models.FlatNode, error) {
-	if db.DBType == types.SQLite {
-		return sqlite_db.GetHomeFlatNodes(db.DB, db.AppVersion, user_id)
+func GetInboxFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, error) {
+	switch db.AppVersion {
+	case types.V2_0:
+		return database_app_v2_0.GetInboxFlatNodes(db, user_id)
+	case types.V3_3:
+		return database_app_v3_3.GetInboxFlatNodes(db, user_id)
 	}
 
-	if db.DBType == types.Postgres {
-		return postgres_db.GetInboxFlatNodes(db.DB, db.AppVersion, user_id)
-	}
-
-	return nil, fmt.Errorf("GetInboxFlatNodes: DBType %s not supported", db.DBType)
+	return nil, fmt.Errorf("database GetInboxFlatNodes: app version %q not supported", db.AppVersion)
 }
 
-func GetUserNodes(db *types.DBConn, user *models.User) error {
-	if db.DBType == types.SQLite {
-		return sqlite_db.GetUserNodes(db.DB, db.AppVersion, user)
+func GetUserNodes(db *types.DBConn, user interface{}) error {
+	switch db.AppVersion {
+	case types.V2_0:
+		return database_app_v2_0.GetUserNodes(db, &user)
+	case types.V3_3:
+		return database_app_v3_3.GetUserNodes(db, &user)
 	}
 
-	if db.DBType == types.Postgres {
-		return postgres_db.GetUserNodes(db.DB, db.AppVersion, user)
-	}
-
-	return fmt.Errorf("GetUserNodes: DBType %s not supported", db.DBType)
+	return fmt.Errorf("database GetUserNodes: app version %q not supported", db.AppVersion)
 }
 
-func GetDocumentPageRows(db *types.DBConn, user_id interface{}) ([]models.DocumentPageRow, error) {
-	if db.DBType == types.SQLite {
-		return sqlite_db.GetDocumentPageRows(db.DB, db.AppVersion, user_id)
+func GetDocumentPageRows(db *types.DBConn, user_id interface{}) (interface{}, error) {
+	switch db.AppVersion {
+	case types.V2_0:
+		return database_app_v2_0.GetDocumentPageRows(db, user_id)
+	case types.V3_3:
+		return database_app_v3_3.GetDocumentPageRows(db, user_id)
 	}
 
-	if db.DBType == types.Postgres {
-		return postgres_db.GetDocumentPageRows(db.DB, db.AppVersion, user_id)
-	}
+	err := fmt.Errorf(
+		"database GetDocumentPageRows: app version %q not supported",
+		db.AppVersion,
+	)
 
-	return nil, fmt.Errorf("GetUserNodes: DBType %s not supported", db.DBType)
+	return nil, err
 }

@@ -10,3 +10,8 @@ type DBConn struct {
 	AppVersion AppVersion
 	DBType     DBType
 }
+
+type FilePath struct {
+	Source string
+	Dest   string
+}
