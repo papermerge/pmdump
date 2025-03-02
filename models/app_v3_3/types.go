@@ -36,11 +36,13 @@ type BaseUser struct {
 }
 
 type User struct {
-	ID       uuid.UUID
-	Username string
-	EMail    string
-	Home     *Node
-	Inbox    *Node
+	ID            uuid.UUID
+	HomeFolderID  uuid.UUID `yaml:"-"` // this field will be skipped
+	InboxFolderID uuid.UUID `yaml:"-"` // this field will be skipped
+	Username      string
+	EMail         string
+	Home          *Node
+	Inbox         *Node
 }
 
 type Users []User

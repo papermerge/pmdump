@@ -144,10 +144,12 @@ func GetUserNodes(db *sql.DB, u *interface{}) error {
 
 	user.Inbox = &models.Node{
 		Title:    "inbox",
+		ID:       user.InboxFolderID,
 		NodeType: models.FolderType,
 	}
 	user.Home = &models.Node{
 		Title:    "home",
+		ID:       user.HomeFolderID,
 		NodeType: models.FolderType,
 	}
 
@@ -158,6 +160,10 @@ func GetUserNodes(db *sql.DB, u *interface{}) error {
 	}
 
 	for _, node := range homeFlatNodes {
+		if node.FullPath == "home" {
+			continue
+		}
+		node.FullPath = utils.WithoutHomePrefix(node.FullPath)
 		user.Home.Insert(node)
 	}
 
