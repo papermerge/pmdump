@@ -20,7 +20,7 @@ func GetUsers(db *sql.DB) (models.Users, error) {
 
 	for rows.Next() {
 		var user models.User
-		err = rows.Scan(&user.UUID, &user.Username, &user.EMail)
+		err = rows.Scan(&user.ID, &user.Username, &user.EMail)
 		if err != nil {
 			return nil, err
 		}

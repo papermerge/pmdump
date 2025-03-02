@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/papermerge/pmdump/types"
+	"github.com/papermerge/pmdump/utils"
 )
 
 func (n *Node) Insert(flatNode FlatNode) {
@@ -52,7 +53,7 @@ func (n *Node) GetUserDocuments() []Node {
 
 func ForEachDocument(
 	n *Node,
-	user_id int,
+	user_id uuid.UUID,
 	docPages []DocumentPageRow,
 	mediaRoot string,
 	op NodeOperation,
@@ -68,23 +69,24 @@ func ForEachDocument(
 
 func InsertDocVersionsAndPages(
 	n *Node,
-	user_id int,
+	user_id uuid.UUID,
 	docPages []DocumentPageRow,
 	mediaRoot string,
 ) {
 	var versions []DocumentVersion
 
-	originalDocPath := fmt.Sprintf("%s/docs/user_%d/document_%d/%s",
+	node_id_str := utils.UUID2STR(n.ID)
+	originalDocPath := fmt.Sprintf("%s/docvers/%s/%s/",
 		mediaRoot,
-		user_id,
-		n.ID,
+		node_id_str[0:2],
+		node_id_str[2:4],
 		*n.FileName,
 	)
 
 	if _, err := os.Stat(originalDocPath); err == nil {
 		version := DocumentVersion{
 			Number:   0,
-			UUID:     uuid.New(),
+			ID:       uuid.New(),
 			FileName: *n.FileName,
 		}
 		pages, err := MakePages(n, user_id, version, mediaRoot, docPages)
@@ -118,7 +120,7 @@ func InsertDocVersionsAndPages(
 			}
 			version := DocumentVersion{
 				Number:   versionNumber,
-				UUID:     uuid.New(),
+				ID:       uuid.New(),
 				FileName: *n.FileName,
 			}
 			pages, err := MakePages(n, user_id, version, mediaRoot, docPages)
@@ -147,12 +149,12 @@ func ForEachNode(
 }
 
 func UpdateNodeUUID(n *Node) {
-	n.NodeUUID = uuid.New()
+	n.ID = uuid.New()
 }
 
 func MakePages(
 	n *Node,
-	user_id int,
+	user_id uuid.UUID,
 	docVer DocumentVersion,
 	mediaRoot string,
 	docPages []DocumentPageRow,
@@ -163,7 +165,7 @@ func MakePages(
 		pages = append(pages, Page{
 			Number: entry.PageNumber,
 			Text:   entry.Text,
-			UUID:   uuid.New(),
+			ID:     uuid.New(),
 		})
 	}
 
@@ -210,7 +212,7 @@ func MakePages(
 			text = string(data)
 			pages = append(pages, Page{
 				Number: pageNumber,
-				UUID:   uuid.New(),
+				ID:     uuid.New(),
 				Text:   &text,
 			})
 		}
@@ -219,7 +221,7 @@ func MakePages(
 	return pages, nil
 }
 
-func GetFilePaths(docs []Node, user_id int, mediaRoot string) ([]types.FilePath, error) {
+func GetFilePaths(docs []Node, user_id uuid.UUID, mediaRoot string) ([]types.FilePath, error) {
 	var paths []types.FilePath
 
 	for _, doc := range docs {
@@ -243,7 +245,7 @@ func GetFilePaths(docs []Node, user_id int, mediaRoot string) ([]types.FilePath,
 					*doc.FileName,
 				)
 			}
-			uid := docVer.UUID.String()
+			uid := docVer.ID.String()
 			dest := fmt.Sprintf("docvers/%s/%s/%s/%s", uid[0:2], uid[2:4], uid, *doc.FileName)
 			path := types.FilePath{
 				Source: source,

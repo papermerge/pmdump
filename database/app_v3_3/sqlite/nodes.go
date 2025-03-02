@@ -11,6 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/papermerge/pmdump/constants"
 	models "github.com/papermerge/pmdump/models/app_v3_3"
+	"github.com/papermerge/pmdump/utils"
 )
 
 func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error) {
@@ -23,7 +24,6 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
         n.ctype AS model,
         n.title as full_path
       FROM nodes n
-      LEFT JOIN documents doc ON doc.node_id = n.id
       WHERE parent_id is NULL and title = 'inbox' AND user_id = ?
 
       UNION ALL
@@ -47,13 +47,16 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
     FROM node_tree
     ORDER BY path_len ASC;
   `
-	rows, err := db.Query(query, user_id, user_id)
+	user_uuid := utils.AnyUUID2STR(user_id)
+
+	rows, err := db.Query(query, user_uuid, user_uuid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	var nodes []models.FlatNode
+	var discard int
 
 	for rows.Next() {
 		var node models.FlatNode
@@ -62,6 +65,7 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
 			&node.Title,
 			&node.Model,
 			&node.FullPath,
+			&discard,
 		)
 		if err != nil {
 			return nil, err
@@ -82,8 +86,7 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
         n.ctype AS model,
         n.title as full_path
       FROM nodes n
-      LEFT JOIN documents doc ON doc.node_id = n.id
-      WHERE parent_id is NULL AND title != 'inbox' AND user_id = ?
+      WHERE parent_id is NULL AND title = 'home' AND user_id = ?
 
       UNION ALL
 
@@ -106,13 +109,16 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
     FROM node_tree
     ORDER BY path_len ASC;
   `
-	rows, err := db.Query(query, user_id, user_id)
+	user_uuid := utils.AnyUUID2STR(user_id)
+
+	rows, err := db.Query(query, user_uuid, user_uuid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	var nodes []models.FlatNode
+	var discard int
 
 	for rows.Next() {
 		var node models.FlatNode
@@ -121,6 +127,7 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
 			&node.Title,
 			&node.Model,
 			&node.FullPath,
+			&discard,
 		)
 		if err != nil {
 			return nil, err
@@ -161,10 +168,10 @@ func GetUserNodes(db *sql.DB, u *interface{}) error {
 	}
 
 	for _, node := range inboxFlatNodes {
-		if node.FullPath == ".inbox" {
+		if node.FullPath == "inbox" {
 			continue
 		}
-		node.FullPath = node.FullPath[7:]
+		node.FullPath = utils.WithoutInboxPrefix(node.FullPath)
 		user.Inbox.Insert(node)
 	}
 
@@ -205,7 +212,7 @@ func ForEachSourceNode(
 			ForEachSourceNode(
 				db,
 				child,
-				n.NodeUUID,
+				n.ID,
 				targetUserID,
 				op,
 			)
@@ -218,8 +225,8 @@ func InsertPage(
 	docVer models.DocumentVersion,
 	page models.Page,
 ) error {
-	noHyphenID := strings.ReplaceAll(page.UUID.String(), "-", "")
-	noHyphenDocumentVersionID := strings.ReplaceAll(docVer.UUID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(page.ID.String(), "-", "")
+	noHyphenDocumentVersionID := strings.ReplaceAll(docVer.ID.String(), "-", "")
 
 	_, err := db.Exec(
 		"INSERT INTO pages (id, document_version_id, number, page_count, lang) VALUES (?, ?, ?, ?, ?)",
@@ -247,8 +254,8 @@ func InsertDocumentVersion(
 	n *models.Node,
 	docVer models.DocumentVersion,
 ) error {
-	noHyphenID := strings.ReplaceAll(docVer.UUID.String(), "-", "")
-	noHyphenDocumentID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(docVer.ID.String(), "-", "")
+	noHyphenDocumentID := strings.ReplaceAll(n.ID.String(), "-", "")
 
 	_, err := db.Exec(
 		"INSERT INTO document_versions (id, document_id, number, file_name, lang, size, page_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -307,7 +314,7 @@ func InsertDocument(
 	}()
 
 	noHyphenParentID := strings.ReplaceAll(parentID.String(), "-", "")
-	noHyphenID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(n.ID.String(), "-", "")
 	noHyphenUserID := strings.ReplaceAll(userID.String(), "-", "")
 
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
@@ -387,7 +394,7 @@ func InsertFolder(
 	}()
 
 	noHyphenParentID := strings.ReplaceAll(parentID.String(), "-", "")
-	noHyphenID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(n.ID.String(), "-", "")
 	noHyphenUserID := strings.ReplaceAll(userID.String(), "-", "")
 
 	currentTime := time.Now().Format("2006-01-02 15:04:05")

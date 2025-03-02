@@ -35,8 +35,7 @@ type BaseUser struct {
 }
 
 type User struct {
-	ID       int
-	UUID     uuid.UUID
+	ID       uuid.UUID
 	Username string
 	EMail    string
 	Home     *Node
@@ -46,7 +45,7 @@ type User struct {
 type Users []User
 
 type FlatNode struct {
-	ID        int
+	ID        uuid.UUID
 	Title     string
 	Model     string
 	FullPath  string
@@ -56,8 +55,7 @@ type FlatNode struct {
 }
 
 type Node struct {
-	ID        int
-	NodeUUID  uuid.UUID
+	ID        uuid.UUID
 	Title     string           `yaml:"title"`
 	Children  map[string]*Node `yaml:"children,omitempty"`
 	NodeType  NodeType
@@ -68,14 +66,14 @@ type Node struct {
 }
 
 type DocumentVersion struct {
-	UUID     uuid.UUID
+	ID       uuid.UUID
 	Number   int
 	FileName string `yaml:"file_name"`
 	Pages    []Page
 }
 
 type Page struct {
-	UUID   uuid.UUID
+	ID     uuid.UUID
 	Text   *string
 	Number int
 }
@@ -94,7 +92,7 @@ type DocumentPageRow struct {
 
 type DocumentPageRows []DocumentPageRow
 
-type NodeOperation func(n *Node, user_id int, docPages []DocumentPageRow, mediaRoot string)
+type NodeOperation func(n *Node, user_id uuid.UUID, docPages []DocumentPageRow, mediaRoot string)
 type NodeQuickOperation func(n *Node)
 
 type TargetNodeOperation func(db *sql.DB, userID uuid.UUID, rootID uuid.UUID, source *Node)

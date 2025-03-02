@@ -236,7 +236,7 @@ func ForEachSourceNode(
 			ForEachSourceNode(
 				db,
 				child,
-				n.NodeUUID,
+				n.ID,
 				targetUserID,
 				op,
 			)
@@ -249,8 +249,8 @@ func InsertPage(
 	docVer models.DocumentVersion,
 	page models.Page,
 ) error {
-	noHyphenID := strings.ReplaceAll(page.UUID.String(), "-", "")
-	noHyphenDocumentVersionID := strings.ReplaceAll(docVer.UUID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(page.ID.String(), "-", "")
+	noHyphenDocumentVersionID := strings.ReplaceAll(docVer.ID.String(), "-", "")
 
 	_, err := db.Exec(
 		"INSERT INTO pages (id, document_version_id, number, page_count, lang) VALUES (?, ?, ?, ?, ?)",
@@ -278,8 +278,8 @@ func InsertDocumentVersion(
 	n *models.Node,
 	docVer models.DocumentVersion,
 ) error {
-	noHyphenID := strings.ReplaceAll(docVer.UUID.String(), "-", "")
-	noHyphenDocumentID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(docVer.ID.String(), "-", "")
+	noHyphenDocumentID := strings.ReplaceAll(n.ID.String(), "-", "")
 
 	_, err := db.Exec(
 		"INSERT INTO document_versions (id, document_id, number, file_name, lang, size, page_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -338,7 +338,7 @@ func InsertDocument(
 	}()
 
 	noHyphenParentID := strings.ReplaceAll(parentID.String(), "-", "")
-	noHyphenID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(n.ID.String(), "-", "")
 	noHyphenUserID := strings.ReplaceAll(userID.String(), "-", "")
 
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
@@ -418,7 +418,7 @@ func InsertFolder(
 	}()
 
 	noHyphenParentID := strings.ReplaceAll(parentID.String(), "-", "")
-	noHyphenID := strings.ReplaceAll(n.NodeUUID.String(), "-", "")
+	noHyphenID := strings.ReplaceAll(n.ID.String(), "-", "")
 	noHyphenUserID := strings.ReplaceAll(userID.String(), "-", "")
 
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
