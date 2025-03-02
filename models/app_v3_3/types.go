@@ -59,9 +59,9 @@ type FlatNode struct {
 
 type Node struct {
 	ID        uuid.UUID
-	Title     string           `yaml:"title"`
-	Children  map[string]*Node `yaml:"children,omitempty"`
-	NodeType  NodeType
+	Title     string            `yaml:"title"`
+	Children  map[string]*Node  `yaml:"children,omitempty"`
+	NodeType  NodeType          `yaml:"node_type,omitempty"`
 	Versions  []DocumentVersion `yaml:"versions,omitempty"`
 	FileName  *string           `yaml:"file_name,omitempty"`
 	PageCount *int              `yaml:"page_count,omitempty"`
