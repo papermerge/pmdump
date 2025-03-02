@@ -70,6 +70,9 @@ type DocumentVersion struct {
 	ID       uuid.UUID
 	Number   int
 	FileName string `yaml:"file_name"`
+	Size     int
+	Lang     string
+	Text     *string
 	Pages    []Page
 }
 
@@ -87,6 +90,9 @@ type DocumentVersionPageRow struct {
 	PageID                uuid.UUID
 	PageNumber            int
 	PageText              *string
+	FileName              string
+	Size                  int
+	Lang                  string
 	DocumentID            uuid.UUID
 	DocumentVersionID     uuid.UUID
 	DocumentVersionText   *string

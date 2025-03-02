@@ -80,32 +80,25 @@ func UpdateNodeUUID(n *Node) {
 	n.ID = uuid.New()
 }
 
-func GetFilePaths(docs []Node, user_id uuid.UUID, mediaRoot string) ([]types.FilePath, error) {
+func GetFilePaths(docs []Node, mediaRoot string) ([]types.FilePath, error) {
 	var paths []types.FilePath
 
 	for _, doc := range docs {
 		for _, docVer := range doc.Versions {
 			var source string
-			if docVer.Number == 0 {
-				source = fmt.Sprintf(
-					"%s/docs/user_%d/document_%d/%s",
-					mediaRoot,
-					user_id,
-					doc.ID,
-					*doc.FileName,
-				)
-			} else {
-				source = fmt.Sprintf(
-					"%s/docs/user_%d/document_%d/v%d/%s",
-					mediaRoot,
-					user_id,
-					doc.ID,
-					docVer.Number,
-					*doc.FileName,
-				)
-			}
+
 			uid := docVer.ID.String()
-			dest := fmt.Sprintf("docvers/%s/%s/%s/%s", uid[0:2], uid[2:4], uid, *doc.FileName)
+
+			source = fmt.Sprintf(
+				"%s/docvers/%s/%s/%s/%s",
+				mediaRoot,
+				uid[0:2],
+				uid[2:4],
+				uid,
+				docVer.FileName,
+			)
+
+			dest := fmt.Sprintf("docvers/%s/%s/%s/%s", uid[0:2], uid[2:4], uid, docVer.FileName)
 			path := types.FilePath{
 				Source: source,
 				Dest:   dest,

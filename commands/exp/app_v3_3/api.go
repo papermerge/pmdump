@@ -55,7 +55,7 @@ func PerformExport(
 		home := users[i].Home.GetUserDocuments()
 		allDocs = append(allDocs, inbox...)
 		allDocs = append(allDocs, home...)
-		userFilePaths, err := models.GetFilePaths(allDocs, users[i].ID, settings.MediaRoot)
+		userFilePaths, err := models.GetFilePaths(allDocs, settings.MediaRoot)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error getting file paths: %v\n", err)
