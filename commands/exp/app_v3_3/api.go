@@ -70,11 +70,9 @@ func PerformExport(
 		types.V3_3,
 	)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error writing to file:performExport2: %v", err)
+		fmt.Fprintf(os.Stderr, "Error writing to file: %v", err)
 		os.Exit(1)
 	}
-
-	filePaths = append(filePaths, types.FilePath{Source: exportYaml, Dest: exportYaml})
 
 	return filePaths
 }
