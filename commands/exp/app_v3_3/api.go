@@ -34,27 +34,17 @@ func PerformExport(
 	users := results.(models.Users)
 
 	for i := 0; i < len(users); i++ {
-		var docPages models.DocumentPageRows
+
 		database.GetUserNodes(db, &users[i])
-		result, err := database.GetDocumentPageRows(db, users[i].ID)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error getting GetDocumentPageRows: %v", err)
-			os.Exit(1)
-		}
-		docPages = result.(models.DocumentPageRows)
 		models.ForEachDocument(
+			db,
 			users[i].Home,
-			users[i].ID,
-			docPages,
-			settings.MediaRoot,
-			models.InsertDocVersionsAndPages,
+			database.InsertDocVersionsAndPages,
 		)
 		models.ForEachDocument(
+			db,
 			users[i].Inbox,
-			users[i].ID,
-			docPages,
-			settings.MediaRoot,
-			models.InsertDocVersionsAndPages,
+			database.InsertDocVersionsAndPages,
 		)
 	}
 

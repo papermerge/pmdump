@@ -2,13 +2,10 @@ package models_app_v3_3
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/papermerge/pmdump/types"
-	"github.com/papermerge/pmdump/utils"
 )
 
 func (n *Node) Insert(flatNode FlatNode) {
@@ -52,88 +49,19 @@ func (n *Node) GetUserDocuments() []Node {
 }
 
 func ForEachDocument(
-	n *Node,
-	user_id uuid.UUID,
-	docPages []DocumentPageRow,
-	mediaRoot string,
+	db *types.DBConn,
+	n any,
 	op NodeOperation,
 ) {
-	if n.NodeType == DocumentType {
-		op(n, user_id, docPages, mediaRoot)
+	node := n.(*Node)
+
+	if node.NodeType == DocumentType {
+		op(db, n)
 	}
 
-	for _, child := range n.Children {
-		ForEachDocument(child, user_id, docPages, mediaRoot, op)
+	for _, child := range node.Children {
+		ForEachDocument(db, child, op)
 	}
-}
-
-func InsertDocVersionsAndPages(
-	n *Node,
-	user_id uuid.UUID,
-	docPages []DocumentPageRow,
-	mediaRoot string,
-) {
-	var versions []DocumentVersion
-
-	node_id_str := utils.UUID2STR(n.ID)
-	originalDocPath := fmt.Sprintf("%s/docvers/%s/%s/",
-		mediaRoot,
-		node_id_str[0:2],
-		node_id_str[2:4],
-		*n.FileName,
-	)
-
-	if _, err := os.Stat(originalDocPath); err == nil {
-		version := DocumentVersion{
-			Number:   0,
-			ID:       uuid.New(),
-			FileName: *n.FileName,
-		}
-		pages, err := MakePages(n, user_id, version, mediaRoot, docPages)
-		if err != nil {
-			fmt.Printf("Error: NewDocument: %s\n", err)
-		} else {
-			version.Pages = pages
-		}
-		versions = append(versions, version)
-	}
-
-	path := fmt.Sprintf(
-		"%s/docs/user_%d/document_%d/",
-		mediaRoot,
-		user_id,
-		n.ID,
-	)
-	entries, err := os.ReadDir(path)
-
-	if err != nil {
-		fmt.Println("Error reading directory:", err)
-	}
-
-	for _, entry := range entries {
-		if entry.IsDir() {
-			strVersionNumber := entry.Name()[1:]
-			versionNumber, err := strconv.Atoi(strVersionNumber)
-			if err != nil {
-				fmt.Printf("Error: %v", err)
-				continue
-			}
-			version := DocumentVersion{
-				Number:   versionNumber,
-				ID:       uuid.New(),
-				FileName: *n.FileName,
-			}
-			pages, err := MakePages(n, user_id, version, mediaRoot, docPages)
-			if err != nil {
-				fmt.Printf("Error: NewDocument: %s\n", err)
-			} else {
-				version.Pages = pages
-			}
-			versions = append(versions, version)
-		}
-	}
-
-	n.Versions = versions
 }
 
 func ForEachNode(
@@ -150,75 +78,6 @@ func ForEachNode(
 
 func UpdateNodeUUID(n *Node) {
 	n.ID = uuid.New()
-}
-
-func MakePages(
-	n *Node,
-	user_id uuid.UUID,
-	docVer DocumentVersion,
-	mediaRoot string,
-	docPages []DocumentPageRow,
-) ([]Page, error) {
-	var pages []Page
-
-	for _, entry := range docPages {
-		pages = append(pages, Page{
-			Number: entry.PageNumber,
-			Text:   entry.Text,
-			ID:     uuid.New(),
-		})
-	}
-
-	var pagesPath string
-	// found out pages from filesystem
-	if docVer.Number == 0 {
-		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/pages/",
-			mediaRoot,
-			user_id,
-			n.ID,
-		)
-	} else {
-		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/v%d/pages/",
-			mediaRoot,
-			user_id,
-			n.ID,
-			docVer.Number,
-		)
-	}
-	pageFiles, err := os.ReadDir(pagesPath)
-
-	if err != nil {
-		fmt.Println("Error reading directory:", err)
-	}
-
-	for _, pageFile := range pageFiles {
-		var text string
-		if !pageFile.IsDir() {
-			// cut '.txt' part
-			fullName := pageFile.Name()
-			name := fullName[:len(fullName)-4]
-			// cut 'page_' part
-			name = name[5:]
-			pageNumber, err := strconv.Atoi(name)
-			if err != nil {
-				fmt.Printf("Error: %v", err)
-			}
-			fullFilePath := pagesPath + pageFile.Name()
-			data, err := os.ReadFile(fullFilePath)
-
-			if err != nil {
-				fmt.Printf("Error: %v", err)
-			}
-			text = string(data)
-			pages = append(pages, Page{
-				Number: pageNumber,
-				ID:     uuid.New(),
-				Text:   &text,
-			})
-		}
-	}
-
-	return pages, nil
 }
 
 func GetFilePaths(docs []Node, user_id uuid.UUID, mediaRoot string) ([]types.FilePath, error) {

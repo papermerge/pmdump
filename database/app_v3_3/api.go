@@ -87,18 +87,17 @@ func GetUserNodes(db *types.DBConn, user *interface{}) error {
 	)
 }
 
-func GetDocumentPageRows(db *types.DBConn, user_id interface{}) (interface{}, error) {
+func InsertDocVersionsAndPages(db *types.DBConn, node any) error {
 	switch db.DBType {
 	case types.SQLite:
-		return sqlite_db.GetDocumentPageRows(db.DB, user_id)
+		sqlite_db.InsertDocVersionsAndPages(db.DB, node)
 	case types.Postgres:
-		return postgres_db.GetDocumentPageRows(db.DB, user_id)
+		postgres_db.InsertDocVersionsAndPages(db.DB, node)
 	}
 
-	err := fmt.Errorf(
+	return fmt.Errorf(
 		"database GetDocumentPageRows: db type %q not supported",
 		db.DBType,
 	)
 
-	return nil, err
 }

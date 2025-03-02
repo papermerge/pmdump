@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
+	"github.com/papermerge/pmdump/types"
 )
 
 type NodeType string
@@ -82,17 +83,17 @@ type Data struct {
 	Users []User
 }
 
-type DocumentPageRow struct {
-	PageID            uuid.UUID
-	PageNumber        int
-	Text              *string
-	DocumentID        uuid.UUID
-	DocumentVersionID uuid.UUID
+type DocumentVersionPageRow struct {
+	PageID                uuid.UUID
+	PageNumber            int
+	PageText              *string
+	DocumentID            uuid.UUID
+	DocumentVersionID     uuid.UUID
+	DocumentVersionText   *string
+	DocumentVersionNumber int
 }
 
-type DocumentPageRows []DocumentPageRow
-
-type NodeOperation func(n *Node, user_id uuid.UUID, docPages []DocumentPageRow, mediaRoot string)
+type NodeOperation func(db *types.DBConn, n any) error
 type NodeQuickOperation func(n *Node)
 
 type TargetNodeOperation func(db *sql.DB, userID uuid.UUID, rootID uuid.UUID, source *Node)

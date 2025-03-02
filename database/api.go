@@ -65,22 +65,6 @@ func GetUserNodes(db *types.DBConn, user interface{}) error {
 	return fmt.Errorf("database GetUserNodes: app version %q not supported", db.AppVersion)
 }
 
-func GetDocumentPageRows(db *types.DBConn, user_id interface{}) (interface{}, error) {
-	switch db.AppVersion {
-	case types.V2_0:
-		return database_app_v2_0.GetDocumentPageRows(db, user_id)
-	case types.V3_3:
-		return database_app_v3_3.GetDocumentPageRows(db, user_id)
-	}
-
-	err := fmt.Errorf(
-		"database GetDocumentPageRows: app version %q not supported",
-		db.AppVersion,
-	)
-
-	return nil, err
-}
-
 func GetTargetUsers(db *types.DBConn) (interface{}, error) {
 	switch db.AppVersion {
 	case types.V3_4:
@@ -95,4 +79,27 @@ func InsertUsersData(db *types.DBConn, sourceUsers interface{}, targetUsers inte
 		database_app_v3_4.InsertUsersData(db, sourceUsers, targetUsers)
 	}
 	return nil, fmt.Errorf("database InsertUserData: app version %q not supported", db.AppVersion)
+}
+
+func InsertDocVersionsAndPages(db *types.DBConn, node any) error {
+	switch db.AppVersion {
+	case types.V3_3:
+		database_app_v3_3.InsertDocVersionsAndPages(db, node)
+	}
+
+	return fmt.Errorf("database InsertDocVersionsAndPages: app version %q not supported", db.AppVersion)
+}
+
+func GetDocumentPageRows(db *types.DBConn, user_id interface{}) (interface{}, error) {
+	switch db.AppVersion {
+	case types.V2_0:
+		return database_app_v2_0.GetDocumentPageRows(db, user_id)
+	}
+
+	err := fmt.Errorf(
+		"database GetDocumentPageRows: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return nil, err
 }
