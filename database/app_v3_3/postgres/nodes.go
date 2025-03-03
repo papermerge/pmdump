@@ -168,11 +168,11 @@ func GetUserNodes(db *sql.DB, u *interface{}) error {
 
 	user.Inbox = &models.Node{
 		Title:    "inbox",
-		NodeType: models.FolderType,
+		NodeType: models.NodeFolderType,
 	}
 	user.Home = &models.Node{
 		Title:    "home",
-		NodeType: models.FolderType,
+		NodeType: models.NodeFolderType,
 	}
 
 	homeFlatNodes, err := GetHomeFlatNodes(db, user.ID)
@@ -210,7 +210,7 @@ func ForEachSourceNode(
 	op models.TargetNodeOperation,
 ) {
 
-	if n.NodeType == models.DocumentType {
+	if n.NodeType == models.NodeDocumentType {
 		if err := InsertDocument(db, n, targetParentID, targetUserID); err != nil {
 			fmt.Fprintf(os.Stderr, "Document insert error: %v\n", err)
 		}

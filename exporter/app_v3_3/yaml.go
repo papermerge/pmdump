@@ -9,20 +9,16 @@ import (
 
 func CreateYAML(
 	fileName string,
-	u interface{},
+	payload any,
 ) error {
 
-	users := u.(models.Users)
+	data := payload.(models.Data)
 
 	file, err := os.Create(fileName)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-
-	data := models.Data{
-		Users: users,
-	}
 
 	yamlData, err := yaml.Marshal(&data)
 	if err != nil {

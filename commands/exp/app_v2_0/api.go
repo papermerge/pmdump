@@ -74,9 +74,13 @@ func PerformExport(
 		filePaths = append(filePaths, userFilePaths...)
 	}
 
+	payload := models.Data{
+		Users: users,
+	}
+
 	err = exporter.CreateYAML(
 		exportYaml,
-		users,
+		payload,
 		types.V2_0,
 	)
 	if err != nil {

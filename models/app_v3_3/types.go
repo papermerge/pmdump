@@ -2,6 +2,7 @@ package models_app_v3_3
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/papermerge/pmdump/types"
@@ -10,8 +11,8 @@ import (
 type NodeType string
 
 const (
-	FolderType   NodeType = "folder"
-	DocumentType NodeType = "document"
+	NodeFolderType   NodeType = "folder"
+	NodeDocumentType NodeType = "document"
 )
 
 /*
@@ -74,18 +75,24 @@ type DocumentVersion struct {
 	FileName string `yaml:"file_name"`
 	Size     int
 	Lang     string
-	Text     *string
+	Text     *string `yaml:"text,omitempty"`
 	Pages    []Page
 }
 
 type Page struct {
 	ID     uuid.UUID
-	Text   *string
+	Text   *string `yaml:"text,omitempty"`
 	Number int
 }
 
 type Data struct {
-	Users []User
+	Users             []User
+	Groups            []Group
+	Permissions       []Permission
+	GroupsPermissions []GroupsPermissions `yaml:"groups_permissions"`
+	DocumentTypes     []DocumentType      `yaml:"document_types"`
+	Tags              []Tag
+	NodesTags         []NodesTags `yaml:"nodes_tags"`
 }
 
 type DocumentVersionPageRow struct {
@@ -105,3 +112,43 @@ type NodeOperation func(db *types.DBConn, n any) error
 type NodeQuickOperation func(n *Node)
 
 type TargetNodeOperation func(db *sql.DB, userID uuid.UUID, rootID uuid.UUID, source *Node)
+
+type Group struct {
+	ID   uuid.UUID
+	Name string
+}
+
+type Permission struct {
+	ID       uuid.UUID
+	Name     string
+	Codename string
+}
+
+type GroupsPermissions struct {
+	GroupID      uuid.UUID `yaml:"group_id"`
+	PermissionID uuid.UUID `yaml:"permission_id"`
+}
+
+type DocumentType struct {
+	ID           uuid.UUID
+	Name         string
+	PathTemplate string    `yaml:"path_template"`
+	UserID       uuid.UUID `yaml:"user_id"`
+	CreatedAt    time.Time `yaml:"created_at"`
+}
+
+type Tag struct {
+	ID          uuid.UUID
+	Name        string
+	FGColor     string `yaml:fg_color"`
+	BGColor     string `yaml:bg_color"`
+	Pinned      bool
+	Description string
+	UserID      string `yaml:"user_id"`
+}
+
+type NodesTags struct {
+	ID     int
+	NodeID uuid.UUID `yaml:"node_id"`
+	TagID  uuid.UUID `yaml:"tag_id"`
+}

@@ -33,6 +33,54 @@ func PerformExport(
 
 	users := results.(models.Users)
 
+	results, err = database.GetGroups(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	groups := results.([]models.Group)
+
+	results, err = database.GetPermissions(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	perms := results.([]models.Permission)
+
+	results, err = database.GetGroupsPermissions(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	groupsPermissions := results.([]models.GroupsPermissions)
+
+	results, err = database.GetDocumentTypes(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting entries from 'document_types' table: %v\n", err)
+		os.Exit(1)
+	}
+
+	documentTypes := results.([]models.DocumentType)
+
+	results, err = database.GetTags(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting entries from 'tags' table: %v\n", err)
+		os.Exit(1)
+	}
+
+	tags := results.([]models.Tag)
+
+	results, err = database.GetNodesTags(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting entries from 'nodes_tags' table: %v\n", err)
+		os.Exit(1)
+	}
+
+	nodesTags := results.([]models.NodesTags)
+
 	for i := 0; i < len(users); i++ {
 
 		database.GetUserNodes(db, &users[i])
@@ -64,9 +112,19 @@ func PerformExport(
 		filePaths = append(filePaths, userFilePaths...)
 	}
 
+	payload := models.Data{
+		Users:             users,
+		Groups:            groups,
+		Permissions:       perms,
+		GroupsPermissions: groupsPermissions,
+		DocumentTypes:     documentTypes,
+		Tags:              tags,
+		NodesTags:         nodesTags,
+	}
+
 	err = exporter.CreateYAML(
 		exportYaml,
-		users,
+		payload,
 		types.V3_3,
 	)
 	if err != nil {

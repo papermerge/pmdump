@@ -21,7 +21,7 @@ func Open(dburl string, appVer types.AppVersion) (*types.DBConn, error) {
 	return nil, fmt.Errorf("database open: app version %q not supported", appVer)
 }
 
-func GetUsers(db *types.DBConn) (interface{}, error) {
+func GetUsers(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
 	case types.V2_0:
 		return database_app_v2_0.GetUsers(db)
@@ -30,6 +30,60 @@ func GetUsers(db *types.DBConn) (interface{}, error) {
 	}
 
 	return nil, fmt.Errorf("database GetUsers: app version %q not supported", db.AppVersion)
+}
+
+func GetGroups(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetGroups(db)
+	}
+
+	return nil, fmt.Errorf("database GetGroups: app version %q not supported", db.AppVersion)
+}
+
+func GetPermissions(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetPermissions(db)
+	}
+
+	return nil, fmt.Errorf("database GetGroups: app version %q not supported", db.AppVersion)
+}
+
+func GetGroupsPermissions(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetGroupsPermissions(db)
+	}
+
+	return nil, fmt.Errorf("database GetGroupsPermissions: app version %q not supported", db.AppVersion)
+}
+
+func GetDocumentTypes(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetDocumentTypes(db)
+	}
+
+	return nil, fmt.Errorf("database GetGroupsPermissions: app version %q not supported", db.AppVersion)
+}
+
+func GetTags(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetTags(db)
+	}
+
+	return nil, fmt.Errorf("database GetTags: app version %q not supported", db.AppVersion)
+}
+
+func GetNodesTags(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetNodesTags(db)
+	}
+
+	return nil, fmt.Errorf("database GetNodesTags: app version %q not supported", db.AppVersion)
 }
 
 func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, error) {

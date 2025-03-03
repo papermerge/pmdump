@@ -36,7 +36,7 @@ func (n *Node) Insert(flatNode FlatNode) {
 func (n *Node) GetUserDocuments() []Node {
 	var results []Node
 
-	if n.NodeType == DocumentType {
+	if n.NodeType == NodeDocumentType {
 		results = append(results, *n)
 	}
 
@@ -55,7 +55,7 @@ func ForEachDocument(
 ) {
 	node := n.(*Node)
 
-	if node.NodeType == DocumentType {
+	if node.NodeType == NodeDocumentType {
 		op(db, n)
 	}
 
