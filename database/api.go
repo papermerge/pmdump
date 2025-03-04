@@ -86,6 +86,51 @@ func GetNodesTags(db *types.DBConn) (any, error) {
 	return nil, fmt.Errorf("database GetNodesTags: app version %q not supported", db.AppVersion)
 }
 
+func GetUsersGroups(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetUsersGroups(db)
+	}
+
+	return nil, fmt.Errorf("database GetUserGroups: app version %q not supported", db.AppVersion)
+}
+
+func GetUsersPermissions(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetUsersPermissions(db)
+	}
+
+	return nil, fmt.Errorf("database GetUsersPermissions: app version %q not supported", db.AppVersion)
+}
+
+func GetCustomFields(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetCustomFields(db)
+	}
+
+	return nil, fmt.Errorf("database GetCustomFields: app version %q not supported", db.AppVersion)
+}
+
+func GetDocumentTypesCustomFields(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetDocumentTypesCustomFields(db)
+	}
+
+	return nil, fmt.Errorf("database GetDocumentTypesCustomFields: app version %q not supported", db.AppVersion)
+}
+
+func GetCustomFieldValues(db *types.DBConn) (any, error) {
+	switch db.AppVersion {
+	case types.V3_3:
+		return database_app_v3_3.GetCustomFieldValues(db)
+	}
+
+	return nil, fmt.Errorf("database GetCustomFieldValues: app version %q not supported", db.AppVersion)
+}
+
 func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, error) {
 	switch db.AppVersion {
 	case types.V2_0:

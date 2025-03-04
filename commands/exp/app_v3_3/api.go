@@ -81,6 +81,46 @@ func PerformExport(
 
 	nodesTags := results.([]models.NodesTags)
 
+	results, err = database.GetUsersGroups(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting entries from 'users_groups' table: %v\n", err)
+		os.Exit(1)
+	}
+
+	usersGroups := results.([]models.UsersGroups)
+
+	results, err = database.GetUsersPermissions(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting entries from 'users_permissions' table: %v\n", err)
+		os.Exit(1)
+	}
+
+	usersPermissions := results.([]models.UsersPermissions)
+
+	results, err = database.GetCustomFields(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting entries from 'custom_fields' table: %v\n", err)
+		os.Exit(1)
+	}
+
+	customFields := results.([]models.CustomField)
+
+	results, err = database.GetDocumentTypesCustomFields(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting entries from 'document_types_custom_fields' table: %v\n", err)
+		os.Exit(1)
+	}
+
+	documentTypesCustomFields := results.([]models.DocumentTypesCustomFields)
+
+	results, err = database.GetCustomFieldValues(db)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting entries from 'custom_field_values' table: %v\n", err)
+		os.Exit(1)
+	}
+
+	customFieldValues := results.([]models.CustomFieldValues)
+
 	for i := 0; i < len(users); i++ {
 
 		database.GetUserNodes(db, &users[i])
@@ -113,13 +153,18 @@ func PerformExport(
 	}
 
 	payload := models.Data{
-		Users:             users,
-		Groups:            groups,
-		Permissions:       perms,
-		GroupsPermissions: groupsPermissions,
-		DocumentTypes:     documentTypes,
-		Tags:              tags,
-		NodesTags:         nodesTags,
+		Users:                     users,
+		Groups:                    groups,
+		Permissions:               perms,
+		GroupsPermissions:         groupsPermissions,
+		DocumentTypes:             documentTypes,
+		Tags:                      tags,
+		NodesTags:                 nodesTags,
+		UsersGroups:               usersGroups,
+		UsersPermissions:          usersPermissions,
+		CustomFields:              customFields,
+		DocumentTypesCustomFields: documentTypesCustomFields,
+		CustomFieldValues:         customFieldValues,
 	}
 
 	err = exporter.CreateYAML(

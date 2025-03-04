@@ -86,13 +86,18 @@ type Page struct {
 }
 
 type Data struct {
-	Users             []User
-	Groups            []Group
-	Permissions       []Permission
-	GroupsPermissions []GroupsPermissions `yaml:"groups_permissions"`
-	DocumentTypes     []DocumentType      `yaml:"document_types"`
-	Tags              []Tag
-	NodesTags         []NodesTags `yaml:"nodes_tags"`
+	Users                     []User
+	Groups                    []Group
+	Permissions               []Permission
+	GroupsPermissions         []GroupsPermissions `yaml:"groups_permissions"`
+	DocumentTypes             []DocumentType      `yaml:"document_types"`
+	Tags                      []Tag
+	NodesTags                 []NodesTags                 `yaml:"nodes_tags"`
+	UsersGroups               []UsersGroups               `yaml:"users_groups"`
+	UsersPermissions          []UsersPermissions          `yaml:"users_permissions"`
+	CustomFields              []CustomField               `yaml:"custom_fields"`
+	DocumentTypesCustomFields []DocumentTypesCustomFields `yaml:"document_types_custom_fields"`
+	CustomFieldValues         []CustomFieldValues         `yaml:"custom_field_values"`
 }
 
 type DocumentVersionPageRow struct {
@@ -151,4 +156,43 @@ type NodesTags struct {
 	ID     int
 	NodeID uuid.UUID `yaml:"node_id"`
 	TagID  uuid.UUID `yaml:"tag_id"`
+}
+
+type UsersGroups struct {
+	UserID  uuid.UUID `yaml:"user_id"`
+	GroupID uuid.UUID `yaml:"group_id"`
+}
+
+type UsersPermissions struct {
+	UserID       uuid.UUID `yaml:"user_id"`
+	PermissionID uuid.UUID `yaml:"permission_id"`
+}
+
+type CustomField struct {
+	ID        uuid.UUID
+	Name      string
+	Type      string
+	ExtraData *string   `yaml:"extra_data,omitempty"`
+	CreatedAt time.Time `yaml:"created_at"`
+	UserID    uuid.UUID `yaml:"user_id"`
+}
+
+type DocumentTypesCustomFields struct {
+	ID             int32
+	DocumentTypeID uuid.UUID `yaml:"document_type_id"`
+	CustomFieldID  uuid.UUID `yaml:"custom_field_id"`
+}
+
+type CustomFieldValues struct {
+	ID             uuid.UUID
+	DocumentID     uuid.UUID  `yaml:"document_id"`
+	FieldID        uuid.UUID  `yaml:"field_id"`
+	ValueText      *string    `yaml:"value_text,omitempty"`
+	ValueBoolean   *bool      `yaml:"value_boolean,omitempty"`
+	ValueDate      *time.Time `yaml:"value_date,omitempty"`
+	ValueInt       *int32     `yaml:"value_int,omitempty"`
+	ValueFloat     *float32   `yaml:"value_float,omitempty"`
+	ValueMonetary  *float32   `yaml:"value_monetary,omitempty"`
+	ValueYearMonth *float32   `yaml:"value_yearmonth,omitempty"`
+	CreatedAt      time.Time  `yaml:"created_at"`
 }
