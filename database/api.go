@@ -14,7 +14,7 @@ func Open(dburl string, appVer types.AppVersion) (*types.DBConn, error) {
 	switch appVer {
 	case types.V2_0:
 		return database_app_v2_0.Open(dburl, appVer)
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.Open(dburl, appVer)
 	}
 
@@ -172,10 +172,10 @@ func GetTargetUsers(db *types.DBConn) (interface{}, error) {
 	return nil, fmt.Errorf("database GetTargetUsers: app version %q not supported", db.AppVersion)
 }
 
-func InsertUsersData(db *types.DBConn, sourceUsers interface{}, targetUsers interface{}) (interface{}, error) {
+func InsertUsersData(db *types.DBConn, sourceUsers any, targetUsers any) ([]types.UserIDChange, error) {
 	switch db.AppVersion {
 	case types.V3_4:
-		database_app_v3_4.InsertUsersData(db, sourceUsers, targetUsers)
+		return database_app_v3_4.InsertUsersData(db, sourceUsers, targetUsers), nil
 	}
 	return nil, fmt.Errorf("database InsertUserData: app version %q not supported", db.AppVersion)
 }
@@ -189,7 +189,7 @@ func InsertDocVersionsAndPages(db *types.DBConn, node any) error {
 	return fmt.Errorf("database InsertDocVersionsAndPages: app version %q not supported", db.AppVersion)
 }
 
-func GetDocumentPageRows(db *types.DBConn, user_id interface{}) (interface{}, error) {
+func GetDocumentPageRows(db *types.DBConn, user_id any) (any, error) {
 	switch db.AppVersion {
 	case types.V2_0:
 		return database_app_v2_0.GetDocumentPageRows(db, user_id)
@@ -201,4 +201,158 @@ func GetDocumentPageRows(db *types.DBConn, user_id interface{}) (interface{}, er
 	)
 
 	return nil, err
+}
+
+func InsertGroups(db *types.DBConn, groups any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertGroups(db, groups)
+	}
+
+	err := fmt.Errorf(
+		"database InsertGroups: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertPermissions(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertPermissions(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database InsertPermissions: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertGroupsPermissions(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertGroupsPermissions(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database InsertGroupsPermissions: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertDocumentTypes(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertDocumentTypes(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database InsertDocumentTypes: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertCustomFields(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertCustomFields(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database InsertCustomFields: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertCustomFieldValues(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertCustomFieldValues(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database InsertCustomFieldValues: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertDocumentTypesCustomFields(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertDocumentTypesCustomFields(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database InsertDocumentTypesCustomFields: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertTags(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertTags(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database Tags: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertNodesTags(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertNodesTags(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database NodesTags: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertUsersGroups(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertUsersGroups(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database UsersGroups: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
+}
+
+func InsertUsersPermissions(db *types.DBConn, p any) error {
+	switch db.AppVersion {
+	case types.V3_4:
+		return database_app_v3_4.InsertUsersPermissions(db, p)
+	}
+
+	err := fmt.Errorf(
+		"database UsersPermissions: app version %q not supported",
+		db.AppVersion,
+	)
+
+	return err
 }

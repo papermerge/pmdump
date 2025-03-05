@@ -11,6 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/papermerge/pmdump/constants"
 	models "github.com/papermerge/pmdump/models/app_v3_3"
+	"github.com/papermerge/pmdump/types"
 )
 
 func GetTargetUsers(db *sql.DB) (models.TargetUserList, error) {
@@ -47,17 +48,24 @@ func GetTargetUsers(db *sql.DB) (models.TargetUserList, error) {
 
 func InsertUsersData(
 	db *sql.DB,
-	su interface{},
-	tu interface{},
-) {
+	su any,
+	tu any,
+) []types.UserIDChange {
 
-	sourceUsers := su.(models.Users)
+	var results []types.UserIDChange
+
+	sourceUsers := su.([]models.User)
 	targetUsers := tu.(models.TargetUserList)
 
 	for i := 0; i < len(sourceUsers); i++ {
 		targetUser := targetUsers.Get(sourceUsers[i].Username)
 		if targetUser != nil {
 			ImportUserData(db, sourceUsers[i], targetUser)
+			result := types.UserIDChange{
+				SourceUserID: sourceUsers[i].ID,
+				TargetUserID: targetUser.ID,
+			}
+			results = append(results, result)
 		} else {
 			targetUser, err := CreateTargetUser(db, sourceUsers[i])
 			if err != nil {
@@ -72,6 +80,8 @@ func InsertUsersData(
 			ImportUserData(db, sourceUsers[i], targetUser)
 		}
 	}
+
+	return results
 }
 
 func ImportUserData(
@@ -79,10 +89,6 @@ func ImportUserData(
 	sourceUser models.User,
 	targetUser *models.TargetUser,
 ) {
-
-	models.ForEachNode(sourceUser.Home, models.UpdateNodeUUID)
-	models.ForEachNode(sourceUser.Inbox, models.UpdateNodeUUID)
-
 	ForEachSourceNode(
 		db,
 		sourceUser.Home, // start here

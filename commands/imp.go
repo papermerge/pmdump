@@ -12,15 +12,15 @@ import (
 	"github.com/papermerge/pmdump/types"
 )
 
-func PerformImport(configFile, targetFile, exportYaml string) {
-	settings, err := config.ReadConfig(configFile)
+func PerformImport(settings config.Config, targetFile, exportYaml string) {
 
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+	if _, err := validateImportConfig(settings); err != nil {
+		fmt.Fprintf(os.Stderr, "Validation Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	err = importer.ExtractTarGz(targetFile, settings.MediaRoot)
+	err := importer.ExtractTarGz(targetFile, settings.MediaRoot)
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error extracting archive: %v", err)
 		os.Exit(1)
@@ -47,5 +47,111 @@ func PerformImport(configFile, targetFile, exportYaml string) {
 		os.Exit(1)
 	}
 
-	database.InsertUsersData(db, sourceData.Users, targetUsers)
+	result, err := database.InsertUsersData(db, sourceData.Users, targetUsers)
+	updateUserIDs(sourceData, result)
+
+	if err = database.InsertGroups(db, sourceData.Groups); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting groups: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertPermissions(db, sourceData.Permissions); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting permissions: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertGroupsPermissions(db, sourceData.GroupsPermissions); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting groups_permissions: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertDocumentTypes(db, sourceData.DocumentTypes); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting document_types: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertCustomFields(db, sourceData.CustomFields); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting custom_fields: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertCustomFieldValues(db, sourceData.CustomFieldValues); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting custom_field_values: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertDocumentTypesCustomFields(db, sourceData.DocumentTypesCustomFields); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting document_types_custom_fields: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertTags(db, sourceData.Tags); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting tags: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertNodesTags(db, sourceData.NodesTags); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting nodes_tags: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertUsersGroups(db, sourceData.UsersGroups); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting users_groups: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err = database.InsertUsersPermissions(db, sourceData.UsersPermissions); err != nil {
+		fmt.Fprintf(os.Stderr, "Error inserting users_permissions: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Import complete.")
+}
+
+func updateUserIDs(data models.Data, userIDschange []types.UserIDChange) {
+	for _, entry := range userIDschange {
+		updateUserID(data, entry)
+	}
+}
+
+func updateUserID(data models.Data, userIDchange types.UserIDChange) {
+
+	for i := range len(data.DocumentTypes) {
+		if data.DocumentTypes[i].UserID == userIDchange.SourceUserID {
+			data.DocumentTypes[i].UserID = userIDchange.TargetUserID
+		}
+	}
+
+	for i := range len(data.Tags) {
+		if data.Tags[i].UserID == userIDchange.SourceUserID {
+			data.Tags[i].UserID = userIDchange.TargetUserID
+		}
+	}
+
+	for i := range len(data.UsersGroups) {
+		if data.UsersGroups[i].UserID == userIDchange.SourceUserID {
+			data.UsersGroups[i].UserID = userIDchange.TargetUserID
+		}
+	}
+
+	for i := range len(data.UsersPermissions) {
+		if data.UsersPermissions[i].UserID == userIDchange.SourceUserID {
+			data.UsersPermissions[i].UserID = userIDchange.TargetUserID
+		}
+	}
+
+	for i := range len(data.CustomFields) {
+		if data.CustomFields[i].UserID == userIDchange.SourceUserID {
+			data.CustomFields[i].UserID = userIDchange.TargetUserID
+		}
+	}
+}
+
+func validateImportConfig(settings config.Config) (bool, error) {
+
+	if settings.AppVersion != "3.4" {
+		return false, fmt.Errorf("AppVersion %q not supported", settings.AppVersion)
+	}
+
+	return true, nil
 }

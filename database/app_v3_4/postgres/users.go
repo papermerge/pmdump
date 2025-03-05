@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/papermerge/pmdump/constants"
 	models "github.com/papermerge/pmdump/models/app_v3_3"
+	"github.com/papermerge/pmdump/types"
 )
 
 func GetTargetUsers(db *sql.DB) (models.TargetUserList, error) {
@@ -46,9 +47,11 @@ func GetTargetUsers(db *sql.DB) (models.TargetUserList, error) {
 
 func InsertUsersData(
 	db *sql.DB,
-	su interface{},
-	tu interface{},
-) {
+	su any,
+	tu any,
+) []types.UserIDChange {
+
+	var results []types.UserIDChange
 
 	sourceUsers := su.(models.Users)
 	targetUsers := tu.(models.TargetUserList)
@@ -57,6 +60,11 @@ func InsertUsersData(
 		targetUser := targetUsers.Get(sourceUsers[i].Username)
 		if targetUser != nil {
 			ImportUserData(db, sourceUsers[i], targetUser)
+			result := types.UserIDChange{
+				SourceUserID: sourceUsers[i].ID,
+				TargetUserID: targetUser.ID,
+			}
+			results = append(results, result)
 		} else {
 			targetUser, err := CreateTargetUser(db, sourceUsers[i])
 			if err != nil {
@@ -71,6 +79,8 @@ func InsertUsersData(
 			ImportUserData(db, sourceUsers[i], targetUser)
 		}
 	}
+
+	return results
 }
 
 func ImportUserData(

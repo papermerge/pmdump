@@ -42,7 +42,7 @@ func main() {
 	if args[0] == exportCommand {
 		commands.PerformExport(*settings, *targetFile, exportYaml)
 	} else if args[0] == importCommand {
-		commands.PerformImport(*configFile, *targetFile, exportYaml)
+		commands.PerformImport(*settings, *targetFile, exportYaml)
 	} else {
 		fmt.Fprintf(
 			os.Stderr,

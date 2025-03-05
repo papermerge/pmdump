@@ -85,21 +85,6 @@ type Page struct {
 	Number int
 }
 
-type Data struct {
-	Users                     []User
-	Groups                    []Group
-	Permissions               []Permission
-	GroupsPermissions         []GroupsPermissions `yaml:"groups_permissions"`
-	DocumentTypes             []DocumentType      `yaml:"document_types"`
-	Tags                      []Tag
-	NodesTags                 []NodesTags                 `yaml:"nodes_tags"`
-	UsersGroups               []UsersGroups               `yaml:"users_groups"`
-	UsersPermissions          []UsersPermissions          `yaml:"users_permissions"`
-	CustomFields              []CustomField               `yaml:"custom_fields"`
-	DocumentTypesCustomFields []DocumentTypesCustomFields `yaml:"document_types_custom_fields"`
-	CustomFieldValues         []CustomFieldValues         `yaml:"custom_field_values"`
-}
-
 type DocumentVersionPageRow struct {
 	PageID                uuid.UUID
 	PageNumber            int
@@ -148,8 +133,8 @@ type Tag struct {
 	FGColor     string `yaml:fg_color"`
 	BGColor     string `yaml:bg_color"`
 	Pinned      bool
-	Description string
-	UserID      string `yaml:"user_id"`
+	Description *string
+	UserID      uuid.UUID `yaml:"user_id"`
 }
 
 type NodesTags struct {
@@ -195,4 +180,19 @@ type CustomFieldValues struct {
 	ValueMonetary  *float32   `yaml:"value_monetary,omitempty"`
 	ValueYearMonth *float32   `yaml:"value_yearmonth,omitempty"`
 	CreatedAt      time.Time  `yaml:"created_at"`
+}
+
+type Data struct {
+	Users                     []User
+	Groups                    []Group
+	Permissions               []Permission
+	GroupsPermissions         []GroupsPermissions `yaml:"groups_permissions"`
+	DocumentTypes             []DocumentType      `yaml:"document_types"`
+	Tags                      []Tag
+	NodesTags                 []NodesTags                 `yaml:"nodes_tags"`
+	UsersGroups               []UsersGroups               `yaml:"users_groups"`
+	UsersPermissions          []UsersPermissions          `yaml:"users_permissions"`
+	CustomFields              []CustomField               `yaml:"custom_fields"`
+	DocumentTypesCustomFields []DocumentTypesCustomFields `yaml:"document_types_custom_fields"`
+	CustomFieldValues         []CustomFieldValues         `yaml:"custom_field_values"`
 }
