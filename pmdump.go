@@ -9,9 +9,8 @@ import (
 	"github.com/papermerge/pmdump/config"
 )
 
-var configFile = flag.String("c", "source.yaml", "path to config file")
-var listConfigurations = flag.Bool("l", false, "List configurations and quit")
-var targetFile = flag.String("f", "output.tar.gz", "Target file - zipped tar archive file name were to dump")
+var configFile = flag.String("c", "", "path to config file")
+var targetFile = flag.String("f", "", "Target file - zipped tar archive file name were to dump")
 
 const exportYaml = "export.yaml"
 const exportCommand = "export"
@@ -22,16 +21,23 @@ func main() {
 
 	args := flag.Args()
 
+	if *configFile == "" {
+		fmt.Fprintf(os.Stderr, "Missing configuration. Did you forget -c flag?\n")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if *targetFile == "" {
+		fmt.Fprintf(os.Stderr, "Missing target file. Did you forget -f flag?\n")
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	settings, err := config.ReadConfig(*configFile)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", configFile, err)
 		os.Exit(1)
-	}
-
-	if *listConfigurations {
-		commands.ListConfigs(*configFile, *targetFile)
-		os.Exit(0)
 	}
 
 	if len(args) == 0 {

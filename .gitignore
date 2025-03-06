@@ -2,6 +2,5 @@ main
 pmdump
 vendor/
 dist/
-*.yaml
 .vscode/
 *.tar.gz

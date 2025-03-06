@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/papermerge/pmdump/constants"
 	models "github.com/papermerge/pmdump/models/app_v3_3"
+	"github.com/papermerge/pmdump/utils"
 )
 
 func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error) {
@@ -19,45 +20,33 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
       SELECT
         n.id,
         n.title,
-        ct.model AS model,
-        n.title as full_path,
-        doc.version,
-        doc.file_name,
-        doc.page_count
-      FROM core_basetreenode n
-      INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
-      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
-      WHERE parent_id is NULL and title = '.inbox' AND user_id = ?
+        n.ctype AS model,
+        n.title as full_path
+      FROM nodes n
+      WHERE parent_id is NULL AND title = 'inbox' AND user_id = $1
 
       UNION ALL
 
       SELECT
         n.id,
         n.title,
-        ct.model AS model,
-        nt.full_path || '/' || n.title AS full_path,
-        doc.version,
-        doc.file_name,
-        doc.page_count
-      FROM core_basetreenode n
+        n.ctype AS MODEL,
+        CAST(CONCAT_WS('/', nt.full_path, n.title) AS VARCHAR(200)) AS full_path
+      FROM nodes n
       INNER JOIN node_tree nt ON n.parent_id = nt.id
-      INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
-      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
-      WHERE n.user_id = ?
+      LEFT JOIN documents doc ON doc.node_id = n.id
+      WHERE n.user_id = $1
     )
     SELECT
       id,
       title,
       model,
       full_path,
-      LENGTH(full_path) AS path_len,
-      version,
-      file_name,
-      page_count
+      LENGTH(full_path) AS path_len
     FROM node_tree
     ORDER BY path_len ASC;
   `
-	rows, err := db.Query(query, user_id, user_id)
+	rows, err := db.Query(query, user_id)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +63,6 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
 			&node.Model,
 			&node.FullPath,
 			&discard,
-			&node.Version,
-			&node.FileName,
-			&node.PageCount,
 		)
 		if err != nil {
 			return nil, err
@@ -88,51 +74,38 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
 }
 
 func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error) {
-	// works only for sqlite3 (because of "||"... For PostgreSQL use "concat")
 	query := `
     WITH RECURSIVE node_tree AS (
       SELECT
         n.id,
         n.title,
-        ct.model AS model,
-        n.title as full_path,
-        doc.version,
-        doc.file_name,
-        doc.page_count
-      FROM core_basetreenode n
-      INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
-      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
-      WHERE parent_id is NULL AND title != '.inbox' AND user_id = ?
+        n.ctype AS model,
+        n.title as full_path
+      FROM nodes n
+      WHERE parent_id is NULL AND title = 'home' AND user_id = $1
 
       UNION ALL
 
       SELECT
         n.id,
         n.title,
-        ct.model AS MODEL,
-        nt.full_path || '/' || n.title AS full_path,
-        doc.version,
-        doc.file_name,
-        doc.page_count
-      FROM core_basetreenode n
+        n.ctype AS MODEL,
+        CAST(CONCAT_WS('/', nt.full_path, n.title) AS VARCHAR(200)) as full_path
+      FROM nodes n
       INNER JOIN node_tree nt ON n.parent_id = nt.id
-      INNER JOIN django_content_type ct ON ct.id = n.polymorphic_ctype_id
-      LEFT JOIN core_document doc ON doc.basetreenode_ptr_id = n.id
-      WHERE n.user_id = ?
+      LEFT JOIN documents doc ON doc.node_id = n.id
+      WHERE n.user_id = $1
     )
     SELECT
       id,
       title,
       model,
       full_path,
-      LENGTH(full_path) AS path_len,
-      version,
-      file_name,
-      page_count
+      LENGTH(full_path) AS path_len
     FROM node_tree
     ORDER BY path_len ASC;
   `
-	rows, err := db.Query(query, user_id, user_id)
+	rows, err := db.Query(query, user_id)
 	if err != nil {
 		return nil, err
 	}
@@ -149,9 +122,6 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
 			&node.Model,
 			&node.FullPath,
 			&discard,
-			&node.Version,
-			&node.FileName,
-			&node.PageCount,
 		)
 		if err != nil {
 			return nil, err
@@ -168,10 +138,12 @@ func GetUserNodes(db *sql.DB, u *interface{}) error {
 
 	user.Inbox = &models.Node{
 		Title:    "inbox",
+		ID:       user.InboxFolderID,
 		NodeType: models.NodeFolderType,
 	}
 	user.Home = &models.Node{
 		Title:    "home",
+		ID:       user.HomeFolderID,
 		NodeType: models.NodeFolderType,
 	}
 
@@ -182,6 +154,10 @@ func GetUserNodes(db *sql.DB, u *interface{}) error {
 	}
 
 	for _, node := range homeFlatNodes {
+		if node.FullPath == "home" {
+			continue
+		}
+		node.FullPath = utils.WithoutHomePrefix(node.FullPath)
 		user.Home.Insert(node)
 	}
 
@@ -192,10 +168,10 @@ func GetUserNodes(db *sql.DB, u *interface{}) error {
 	}
 
 	for _, node := range inboxFlatNodes {
-		if node.FullPath == ".inbox" {
+		if node.FullPath == "inbox" {
 			continue
 		}
-		node.FullPath = node.FullPath[7:]
+		node.FullPath = utils.WithoutInboxPrefix(node.FullPath)
 		user.Inbox.Insert(node)
 	}
 

@@ -9,38 +9,6 @@ import (
 	models "github.com/papermerge/pmdump/models/app_v3_3"
 )
 
-func GetUsers(db *sql.DB) (models.Users, error) {
-	rows, err := db.Query("SELECT id, home_folder_id, inbox_folder_id, username, email FROM users")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var users []models.User
-
-	for rows.Next() {
-		var user models.User
-		err = rows.Scan(
-			&user.ID,
-			&user.HomeFolderID,
-			&user.InboxFolderID,
-			&user.Username,
-			&user.EMail,
-		)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, user)
-	}
-
-	// Check for errors from iterating over rows
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return users, nil
-}
-
 func GetTargetUsers(db *sql.DB) (models.TargetUserList, error) {
 	rows, err := db.Query("SELECT id, username, email, home_folder_id, inbox_folder_id FROM users")
 	if err != nil {

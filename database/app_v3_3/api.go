@@ -32,18 +32,21 @@ func Open(dburl string, appVer types.AppVersion) (*types.DBConn, error) {
 		return &dbconn, nil
 	}
 
-	return nil, fmt.Errorf("database open: app version %q not supported", appVer)
-}
+	if strings.HasPrefix(parsedDBURL.Scheme, "postgres") {
+		db, err := postgres_db.Open(dburl)
+		if err != nil {
+			return nil, err
+		}
+		dbconn := types.DBConn{
+			AppVersion: appVer,
+			DBType:     types.Postgres,
+			DB:         db,
+		}
 
-func GetUsers(db *types.DBConn) (interface{}, error) {
-	switch db.DBType {
-	case types.SQLite:
-		return sqlite_db.GetUsers(db.DB)
-	case types.Postgres:
-		return postgres_db.GetUsers(db.DB)
+		return &dbconn, nil
 	}
 
-	return nil, fmt.Errorf("database GetUsers: db type %q not supported", db.DBType)
+	return nil, fmt.Errorf("database open: app version %q not supported", appVer)
 }
 
 func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, error) {

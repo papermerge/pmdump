@@ -77,7 +77,6 @@ func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, erro
 }
 
 func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error) {
-	// works only for sqlite3 (because of "||"... For PostgreSQL use "concat")
 	query := `
     WITH RECURSIVE node_tree AS (
       SELECT

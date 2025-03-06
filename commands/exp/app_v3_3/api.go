@@ -31,7 +31,7 @@ func PerformExport(
 		os.Exit(1)
 	}
 
-	users := results.(models.Users)
+	users := results.([]models.User)
 
 	results, err = database.GetGroups(db)
 	if err != nil {

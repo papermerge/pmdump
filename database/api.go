@@ -26,7 +26,7 @@ func GetUsers(db *types.DBConn) (any, error) {
 	case types.V2_0:
 		return database_app_v2_0.GetUsers(db)
 	case types.V3_3:
-		return database_app_v3_3.GetUsers(db)
+		return database_app_v3_3.GetUsers(db.DB)
 	}
 
 	return nil, fmt.Errorf("database GetUsers: app version %q not supported", db.AppVersion)
