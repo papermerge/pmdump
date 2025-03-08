@@ -169,14 +169,16 @@ func GetUserNodes(db *sql.DB, u *any) error {
 
 	user.Inbox = &models.Node{
 		Title:    "inbox",
+		ID:       uuid.New(),
 		NodeType: models.FolderType,
 	}
 	user.Home = &models.Node{
 		Title:    "home",
+		ID:       uuid.New(),
 		NodeType: models.FolderType,
 	}
 
-	homeFlatNodes, err := GetHomeFlatNodes(db, user.ID)
+	homeFlatNodes, err := GetHomeFlatNodes(db, user.LegacyID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error in GetHomeFlatNodes: %v\n", err)
 		os.Exit(1)
@@ -186,7 +188,7 @@ func GetUserNodes(db *sql.DB, u *any) error {
 		user.Home.Insert(node)
 	}
 
-	inboxFlatNodes, err := GetInboxFlatNodes(db, user.ID)
+	inboxFlatNodes, err := GetInboxFlatNodes(db, user.LegacyID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error in GetInboxFlatNodes: %v\n", err)
 		os.Exit(1)

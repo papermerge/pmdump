@@ -35,7 +35,7 @@ func PerformExport(
 
 	for i := 0; i < len(users); i++ {
 		database.GetUserNodes(db, &users[i])
-		results, err := database.GetDocumentPageRows(db, users[i].ID)
+		results, err := database.GetDocumentPageRows(db, users[i].LegacyID)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error getting GetDocumentPageRows: %v", err)
 		}

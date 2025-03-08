@@ -25,6 +25,7 @@ func (n *Node) Insert(flatNode FlatNode) {
 			current.Children[part] = &Node{
 				Title:     part,
 				LegacyID:  flatNode.ID,
+				ID:        uuid.New(),
 				NodeType:  NodeType(flatNode.Model),
 				FileName:  flatNode.FileName,
 				PageCount: flatNode.PageCount,
@@ -77,7 +78,7 @@ func InsertDocVersionsAndPages(
 	originalDocPath := fmt.Sprintf("%s/docs/user_%d/document_%d/%s",
 		mediaRoot,
 		user_id,
-		n.ID,
+		n.LegacyID,
 		*n.FileName,
 	)
 
@@ -100,7 +101,7 @@ func InsertDocVersionsAndPages(
 		"%s/docs/user_%d/document_%d/",
 		mediaRoot,
 		user_id,
-		n.ID,
+		n.LegacyID,
 	)
 	entries, err := os.ReadDir(path)
 
@@ -183,7 +184,7 @@ func MakePages(
 		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/pages/",
 			mediaRoot,
 			user_id,
-			n.ID,
+			n.LegacyID,
 		)
 	} else {
 		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/v%d/pages/",
@@ -196,7 +197,7 @@ func MakePages(
 	pageFiles, err := os.ReadDir(pagesPath)
 
 	if err != nil {
-		fmt.Println("Error reading directory:", err)
+		fmt.Println("MakePages: Error reading directory:", err)
 	}
 
 	for _, pageFile := range pageFiles {
@@ -239,7 +240,7 @@ func GetFilePaths(docs []Node, user_id int, mediaRoot string) ([]types.FilePath,
 					"%s/docs/user_%d/document_%d/%s",
 					mediaRoot,
 					user_id,
-					doc.ID,
+					doc.LegacyID,
 					*doc.FileName,
 				)
 			} else {
@@ -247,7 +248,7 @@ func GetFilePaths(docs []Node, user_id int, mediaRoot string) ([]types.FilePath,
 					"%s/docs/user_%d/document_%d/v%d/%s",
 					mediaRoot,
 					user_id,
-					doc.ID,
+					doc.LegacyID,
 					docVer.Number,
 					*doc.FileName,
 				)
