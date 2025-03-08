@@ -39,7 +39,7 @@ And then:
 
 ```
 chmod +x pmdump
-sudo mv mybinary /usr/local/bin/
+sudo mv pmdump /usr/local/bin/
 ```
 
 You can add the current directory to your PATH temporarily:
