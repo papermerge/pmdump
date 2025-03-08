@@ -5,14 +5,19 @@ Tool to migrate Papermerge DMS data.
 Basically you export data from one version as tar.gz archive and import it
 into 3.4
 
-Export work for following versions/databases
+For PMDump version 0.1 `export` command works for following Papermerge DMS versions/databases
 
-|  db/pmg version  |  2.0 | 2.1          | 3.2 | 3.3 |
-|------------------|------|--------------|-----|-----|
-|       SQLite     |  ✅  | coming...    |     | ✅  |
-|       PostgreSQL |  ✅  | coming...    | ✅  | ✅  |
+|  db/pmg version  |  2.0 | 2.1   | 3.2         | 3.3 |
+|------------------|------|-------|-------------|-----|
+|       SQLite     |  ✅  | 🚧    | 🚧          | ✅  |
+|       PostgreSQL |  ❌  | 🚧    | ✅          | ✅  |
 
+Currently `import` command works to import only into 3.4 either SQLite or PostgreSQL database.
 
+✅ - It works
+❌ - no plans to implement this part yet. If you need this to be implemented, please
+     open a ticket and provide docker compose with your setup.
+🚧 - Work in progress. Will be available soon.
 
 ## Usage
 
