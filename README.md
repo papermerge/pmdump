@@ -128,19 +128,27 @@ $ pmdump -c examples/source_3_3_pg.yaml -f pm3.3_pg.tar.gz export
 ### Import
 
 
-Create `dest.yaml` file
+Create `dest_pg.yaml` file
 
 ```yaml
-version: 3.4
-media_root: /path/to/media/folder/
-database_url: /path/to/data/papermerge.db
+media_root: /home/eugen/DockerCompose/pm3.4-pg/media/
+database_url: postgresql://coco:kesha@127.0.0.1:5432/pmg34?sslmode=disable
+app_version: 3.4
 ```
 
-```
-$ pmdump -c dest.yaml -f /path/to/archive.tar.gz import
+Run import command (notice that `import` is at the end of parameters)
+
+```bash
+pmdump -c dest_pg.yaml -f /path/to/archive.tar.gz import
 ```
 
-Note that `export` or `import` commands are at the end of parameters list.
+If you are importing into SQLite database, configuration file will look like:
+
+```yaml
+media_root: /home/eugen/DockerCompose/pm3.4-sqlite/media/
+database_url: sqlite:///home/eugen/DockerCompose/pm3.4-sqlite/data/db.sqlite3
+app_version: 3.4
+```
 
 
 ## Development
