@@ -20,9 +20,9 @@ func InsertTags(db *sql.DB, t any) error {
       description,
       user_id
     ) VALUES(
-      ?, ?, ?,
-      ?, ?, ?,
-      ?
+      $1, $2, $3,
+      $4, $5, $6,
+      $7
     )`
 
 	for _, tag := range tags {

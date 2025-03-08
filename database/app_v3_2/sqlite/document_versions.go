@@ -1,4 +1,4 @@
-package postgres_app_v3_3
+package sqlite_app_v3_3
 
 import (
 	"database/sql"
@@ -29,7 +29,7 @@ func GetDocumentVersionsForNode(
     FROM document_versions dv
     JOIN pages p ON p.document_version_id = dv.id
     JOIN documents d ON d.node_id = dv.document_id
-    WHERE d.node_id = $1
+    WHERE d.node_id = ?
   `
 	node_uuid := utils.UUID2STR(node_id)
 

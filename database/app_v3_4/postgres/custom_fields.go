@@ -10,7 +10,7 @@ import (
 
 func InsertCustomFields(db *sql.DB, cf any) error {
 	custom_fields := cf.([]models.CustomField)
-	query := `INSERT INTO custom_fields (id, name, type, extra_data, created_at, user_id) VALUES(?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO custom_fields (id, name, type, extra_data, created_at, user_id) VALUES($1, $2, $3, $4, $5, $6)`
 
 	for _, custom_field := range custom_fields {
 		id := utils.UUID2STR(custom_field.ID)

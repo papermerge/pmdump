@@ -25,10 +25,10 @@ func InsertCustomFieldValues(db *sql.DB, cfv any) error {
       created_at
     )
     VALUES(
-      ?, ?, ?,
-      ?, ?, ?,
-      ?, ?, ?,
-      ?, ?
+      $1, $2, $3,
+      $4, $5, $6,
+      $7, $8, $9,
+      $10, $11
     )`
 
 	for _, cfv := range custom_field_values {

@@ -12,7 +12,7 @@ func InsertDocumentTypesCustomFields(db *sql.DB, dt any) error {
 	query := `
     INSERT INTO
       document_types_custom_fields (id, document_type_id, custom_field_id)
-      VALUES(?, ?, ?)
+      VALUES($1, $2, $3)
     `
 
 	for _, dtcf := range dtcfs {

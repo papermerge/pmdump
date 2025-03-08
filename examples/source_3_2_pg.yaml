@@ -1,0 +1,3 @@
+media_root: /home/eugen/DockerCompose/pm3.2-pg/media32
+database_url: postgresql://coco:kesha@127.0.0.1:5432/pmg32?sslmode=disable
+app_version: 3.2

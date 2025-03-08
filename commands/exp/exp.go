@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	exporter_app_v2_0 "github.com/papermerge/pmdump/commands/exp/app_v2_0"
+	exporter_app_v3_2 "github.com/papermerge/pmdump/commands/exp/app_v3_2"
 	exporter_app_v3_3 "github.com/papermerge/pmdump/commands/exp/app_v3_3"
 	"github.com/papermerge/pmdump/config"
 	"github.com/papermerge/pmdump/exporter"
@@ -27,6 +28,8 @@ func PerformExport(settings config.Config, targetFile, exportYaml string) {
 		filePaths = exporter_app_v2_0.PerformExport(settings, targetFile, exportYaml)
 	case string(types.V3_3):
 		filePaths = exporter_app_v3_3.PerformExport(settings, targetFile, exportYaml)
+	case string(types.V3_2):
+		filePaths = exporter_app_v3_2.PerformExport(settings, targetFile, exportYaml)
 	default:
 		supported_versions := []types.AppVersion{
 			types.V2_0, types.V2_1,
@@ -44,6 +47,7 @@ func PerformExport(settings config.Config, targetFile, exportYaml string) {
 		return
 	}
 	os.Remove(exportYaml)
+	fmt.Println("Export complete")
 }
 
 func validExportConfig(settings config.Config) (bool, error) {

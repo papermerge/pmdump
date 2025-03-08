@@ -1,4 +1,4 @@
-package postgres_app_v3_4
+package sqlite_app_v3_3
 
 import (
 	"database/sql"
@@ -8,108 +8,179 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/papermerge/pmdump/constants"
 	models "github.com/papermerge/pmdump/models/app_v3_3"
-	"github.com/papermerge/pmdump/types"
+	"github.com/papermerge/pmdump/utils"
 )
 
-func GetTargetUsers(db *sql.DB) (models.TargetUserList, error) {
-	rows, err := db.Query("SELECT id, username, email, home_folder_id, inbox_folder_id FROM users")
+func GetInboxFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error) {
+	// works only for sqlite3 (because of "||", "?" and "LENGTH". For PostgreSQL use "concat", "$x")
+	query := `
+    WITH RECURSIVE node_tree AS (
+      SELECT
+        n.id,
+        n.title,
+        n.ctype AS model,
+        n.title as full_path
+      FROM nodes n
+      WHERE parent_id is NULL and title = 'inbox' AND user_id = ?
+
+      UNION ALL
+
+      SELECT
+        n.id,
+        n.title,
+        n.ctype AS model,
+        nt.full_path || '/' || n.title AS full_path
+      FROM nodes n
+      INNER JOIN node_tree nt ON n.parent_id = nt.id
+      LEFT JOIN documents doc ON doc.node_id = n.id
+      WHERE n.user_id = ?
+    )
+    SELECT
+      id,
+      title,
+      model,
+      full_path,
+      LENGTH(full_path) AS path_len
+    FROM node_tree
+    ORDER BY path_len ASC;
+  `
+	user_uuid := utils.AnyUUID2STR(user_id)
+
+	rows, err := db.Query(query, user_uuid, user_uuid)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var users models.TargetUserList
+	var nodes []models.FlatNode
+	var discard int
 
 	for rows.Next() {
-		var user models.TargetUser
+		var node models.FlatNode
 		err = rows.Scan(
-			&user.ID,
-			&user.Username,
-			&user.EMail,
-			&user.HomeID,
-			&user.InboxID,
+			&node.ID,
+			&node.Title,
+			&node.Model,
+			&node.FullPath,
+			&discard,
 		)
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, user)
-	}
 
-	// Check for errors from iterating over rows
-	if err = rows.Err(); err != nil {
+		nodes = append(nodes, node)
+	}
+	return nodes, nil
+}
+
+func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error) {
+	query := `
+    WITH RECURSIVE node_tree AS (
+      SELECT
+        n.id,
+        n.title,
+        n.ctype AS model,
+        n.title as full_path
+      FROM nodes n
+      WHERE parent_id is NULL AND title = 'home' AND user_id = ?
+
+      UNION ALL
+
+      SELECT
+        n.id,
+        n.title,
+        n.ctype AS MODEL,
+        nt.full_path || '/' || n.title AS full_path
+      FROM nodes n
+      INNER JOIN node_tree nt ON n.parent_id = nt.id
+      LEFT JOIN documents doc ON doc.node_id = n.id
+      WHERE n.user_id = ?
+    )
+    SELECT
+      id,
+      title,
+      model,
+      full_path,
+      LENGTH(full_path) AS path_len
+    FROM node_tree
+    ORDER BY path_len ASC;
+  `
+	user_uuid := utils.AnyUUID2STR(user_id)
+
+	rows, err := db.Query(query, user_uuid, user_uuid)
+	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	return users, nil
+	var nodes []models.FlatNode
+	var discard int
+
+	for rows.Next() {
+		var node models.FlatNode
+		err = rows.Scan(
+			&node.ID,
+			&node.Title,
+			&node.Model,
+			&node.FullPath,
+			&discard,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		nodes = append(nodes, node)
+	}
+	return nodes, nil
 }
 
-func InsertUsersData(
-	db *sql.DB,
-	su any,
-	tu any,
-) []types.UserIDChange {
+func GetUserNodes(db *sql.DB, u *interface{}) error {
 
-	var results []types.UserIDChange
+	user := (*u).(*models.User)
 
-	sourceUsers := su.([]models.User)
-	targetUsers := tu.(models.TargetUserList)
-
-	for i := 0; i < len(sourceUsers); i++ {
-		targetUser := targetUsers.Get(sourceUsers[i].Username)
-		if targetUser != nil {
-			ImportUserData(db, sourceUsers[i], targetUser)
-			result := types.UserIDChange{
-				SourceUserID: sourceUsers[i].ID,
-				TargetUserID: targetUser.ID,
-			}
-			results = append(results, result)
-		} else {
-			targetUser, err := CreateTargetUser(db, sourceUsers[i])
-			if err != nil {
-				fmt.Fprintf(
-					os.Stderr,
-					"Error creating target user for %s: %v\n",
-					sourceUsers[i].Username,
-					err,
-				)
-				continue
-			}
-			ImportUserData(db, sourceUsers[i], targetUser)
-		}
+	user.Inbox = &models.Node{
+		Title:    "inbox",
+		ID:       user.InboxFolderID,
+		NodeType: models.NodeFolderType,
+	}
+	user.Home = &models.Node{
+		Title:    "home",
+		ID:       user.HomeFolderID,
+		NodeType: models.NodeFolderType,
 	}
 
-	return results
-}
+	homeFlatNodes, err := GetHomeFlatNodes(db, user.ID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error in GetHomeFlatNodes: %v\n", err)
+		os.Exit(1)
+	}
 
-func ImportUserData(
-	db *sql.DB,
-	sourceUser models.User,
-	targetUser *models.TargetUser,
-) {
+	for _, node := range homeFlatNodes {
+		if node.FullPath == "home" {
+			continue
+		}
+		node.FullPath = utils.WithoutHomePrefix(node.FullPath)
+		user.Home.Insert(node)
+	}
 
-	ForEachSourceNode(
-		db,
-		sourceUser.Home, // start here
-		targetUser.HomeID,
-		targetUser.ID,
-		CreateTargetNode,
-	)
-	ForEachSourceNode(
-		db,
-		sourceUser.Inbox, // start here
-		targetUser.InboxID,
-		targetUser.ID,
-		CreateTargetNode,
-	)
-}
+	inboxFlatNodes, err := GetInboxFlatNodes(db, user.ID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error in GetInboxFlatNodes: %v\n", err)
+		os.Exit(1)
+	}
 
-func CreateTargetUser(
-	db *sql.DB,
-	source models.User,
-) (*models.TargetUser, error) {
-	return nil, nil
+	for _, node := range inboxFlatNodes {
+		if node.FullPath == "inbox" {
+			continue
+		}
+		node.FullPath = utils.WithoutInboxPrefix(node.FullPath)
+		user.Inbox.Insert(node)
+	}
+
+	return nil
 }
 
 func ForEachSourceNode(
@@ -163,7 +234,7 @@ func InsertPage(
 	noHyphenDocumentVersionID := strings.ReplaceAll(docVer.ID.String(), "-", "")
 
 	_, err := db.Exec(
-		"INSERT INTO pages (id, document_version_id, number, page_count, lang) VALUES ($1, $2, $3, $4, $5)",
+		"INSERT INTO pages (id, document_version_id, number, page_count, lang) VALUES (?, ?, ?, ?, ?)",
 		noHyphenID,
 		noHyphenDocumentVersionID,
 		page.Number,
@@ -192,7 +263,7 @@ func InsertDocumentVersion(
 	noHyphenDocumentID := strings.ReplaceAll(n.ID.String(), "-", "")
 
 	_, err := db.Exec(
-		"INSERT INTO document_versions (id, document_id, number, file_name, lang, size, page_count) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		"INSERT INTO document_versions (id, document_id, number, file_name, lang, size, page_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
 		noHyphenID,
 		noHyphenDocumentID,
 		docVer.Number,
@@ -254,7 +325,7 @@ func InsertDocument(
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
 
 	_, err = db.Exec(
-		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		noHyphenID,
 		n.Title,
 		constants.ENG,
@@ -275,7 +346,7 @@ func InsertDocument(
 	}
 
 	_, err = db.Exec(
-		"INSERT INTO documents (node_id, ocr, ocr_status) VALUES ($1, $2, $3)",
+		"INSERT INTO documents (node_id, ocr, ocr_status) VALUES (?, ?, ?)",
 		noHyphenID,
 		false,
 		constants.UNKNOWN,
@@ -334,7 +405,7 @@ func InsertFolder(
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
 
 	_, err = db.Exec(
-		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+		"INSERT INTO nodes (id, title, lang, ctype, user_id, parent_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		noHyphenID,
 		n.Title,
 		constants.ENG,
@@ -354,7 +425,7 @@ func InsertFolder(
 		)
 	}
 	_, err = db.Exec(
-		"INSERT INTO folders (node_id) VALUES ($1)",
+		"INSERT INTO folders (node_id) VALUES (?)",
 		noHyphenID,
 	)
 	if err != nil {

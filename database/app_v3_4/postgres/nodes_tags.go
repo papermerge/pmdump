@@ -10,7 +10,7 @@ import (
 
 func InsertNodesTags(db *sql.DB, nt any) error {
 	nodes_tags := nt.([]models.NodesTags)
-	query := `INSERT INTO nodes_tags (id, node_id, tag_id) VALUES(?, ?, ?)`
+	query := `INSERT INTO nodes_tags (id, node_id, tag_id) VALUES($1, $2, $3)`
 
 	for _, node_tag := range nodes_tags {
 		id := node_tag.ID

@@ -10,7 +10,7 @@ import (
 
 func InsertGroupsPermissions(db *sql.DB, p any) error {
 	groups_permissions := p.([]models.GroupsPermissions)
-	query := `INSERT INTO groups_permissions (group_id, permission_id) VALUES(?, ?)`
+	query := `INSERT INTO groups_permissions (group_id, permission_id) VALUES($1, $2)`
 
 	for _, group_perm := range groups_permissions {
 		guid := utils.UUID2STR(group_perm.GroupID)

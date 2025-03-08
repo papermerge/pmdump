@@ -10,7 +10,7 @@ import (
 
 func InsertPermissions(db *sql.DB, p any) error {
 	permissions := p.([]models.Permission)
-	query := `INSERT INTO permissions (id, name, codename) VALUES(?, ?, ?)`
+	query := `INSERT INTO permissions (id, name, codename) VALUES($1, $2, $3)`
 
 	for _, perm := range permissions {
 		uid := utils.UUID2STR(perm.ID)

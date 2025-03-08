@@ -29,7 +29,7 @@ func CreateTarGz(outputFilename string, paths []types.FilePath) error {
 	// Add files to archive
 	for _, path := range paths {
 		if err := addFileToTar(tarWriter, path); err != nil {
-			fmt.Fprintf(os.Stderr, "Warning:CreateTarGz:skipping %q\n", path.Source)
+			fmt.Fprintf(os.Stderr, "Warning:CreateTarGz:skipping %q:%s\n", path.Source, err)
 			continue
 		}
 	}

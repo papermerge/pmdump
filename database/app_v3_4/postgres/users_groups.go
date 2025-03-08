@@ -10,7 +10,7 @@ import (
 
 func InsertUsersGroups(db *sql.DB, p any) error {
 	users_groups := p.([]models.UsersGroups)
-	query := `INSERT INTO users_groups (user_id, group_id) VALUES(?, ?)`
+	query := `INSERT INTO users_groups (user_id, group_id) VALUES($1, $2)`
 
 	for _, user_group := range users_groups {
 		uid := utils.UUID2STR(user_group.UserID)
