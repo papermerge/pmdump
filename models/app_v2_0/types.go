@@ -35,8 +35,8 @@ type BaseUser struct {
 }
 
 type User struct {
-	ID       int
-	UUID     uuid.UUID
+	ID       uuid.UUID
+	LegacyID int `yaml:"legacy_id"`
 	Username string
 	EMail    string
 	Home     *Node
@@ -56,8 +56,8 @@ type FlatNode struct {
 }
 
 type Node struct {
-	ID        int
-	NodeUUID  uuid.UUID
+	ID        uuid.UUID
+	LegacyID  int              `yaml:"legacy_id"`
 	Title     string           `yaml:"title"`
 	Children  map[string]*Node `yaml:"children,omitempty"`
 	NodeType  NodeType
@@ -68,16 +68,18 @@ type Node struct {
 }
 
 type DocumentVersion struct {
-	UUID     uuid.UUID
+	ID       uuid.UUID
+	LegacyID int `yaml:"legacy_id"`
 	Number   int
 	FileName string `yaml:"file_name"`
 	Pages    []Page
 }
 
 type Page struct {
-	UUID   uuid.UUID
-	Text   string
-	Number int
+	ID       uuid.UUID
+	LegacyID int `yaml:"legacy_id"`
+	Text     string
+	Number   int
 }
 
 type Data struct {
@@ -85,12 +87,13 @@ type Data struct {
 }
 
 type DocumentPageRow struct {
-	PageID          int
-	PageUUID        uuid.UUID
-	PageNumber      int
-	Text            string
-	DocumentID      int
-	DocumentVersion int
+	PageLegacyID     int
+	PageID           uuid.UUID
+	PageNumber       int
+	Text             string
+	DocumentID       uuid.UUID
+	DocumentLegacyID int
+	DocumentVersion  int
 }
 
 type DocumentPageRows []DocumentPageRow

@@ -24,7 +24,7 @@ func (n *Node) Insert(flatNode FlatNode) {
 		if _, exists := current.Children[part]; !exists {
 			current.Children[part] = &Node{
 				Title:     part,
-				ID:        flatNode.ID,
+				LegacyID:  flatNode.ID,
 				NodeType:  NodeType(flatNode.Model),
 				FileName:  flatNode.FileName,
 				PageCount: flatNode.PageCount,
@@ -84,7 +84,7 @@ func InsertDocVersionsAndPages(
 	if _, err := os.Stat(originalDocPath); err == nil {
 		version := DocumentVersion{
 			Number:   0,
-			UUID:     uuid.New(),
+			ID:       uuid.New(),
 			FileName: *n.FileName,
 		}
 		pages, err := MakePages(n, user_id, version, mediaRoot, docPages)
@@ -118,7 +118,7 @@ func InsertDocVersionsAndPages(
 			}
 			version := DocumentVersion{
 				Number:   versionNumber,
-				UUID:     uuid.New(),
+				ID:       uuid.New(),
 				FileName: *n.FileName,
 			}
 			pages, err := MakePages(n, user_id, version, mediaRoot, docPages)
@@ -147,7 +147,7 @@ func ForEachNode(
 }
 
 func UpdateNodeUUID(n *Node) {
-	n.NodeUUID = uuid.New()
+	n.ID = uuid.New()
 }
 
 func MakePages(
@@ -166,7 +166,7 @@ func MakePages(
 			pages = append(pages, Page{
 				Number: entry.PageNumber,
 				Text:   entry.Text,
-				UUID:   uuid.New(),
+				ID:     uuid.New(),
 			})
 		}
 	}
@@ -189,7 +189,7 @@ func MakePages(
 		pagesPath = fmt.Sprintf("%s/results/user_%d/document_%d/v%d/pages/",
 			mediaRoot,
 			user_id,
-			n.ID,
+			n.LegacyID,
 			docVer.Number,
 		)
 	}
@@ -219,7 +219,7 @@ func MakePages(
 
 			pages = append(pages, Page{
 				Number: pageNumber,
-				UUID:   uuid.New(),
+				ID:     uuid.New(),
 				Text:   string(data),
 			})
 		}
@@ -252,7 +252,7 @@ func GetFilePaths(docs []Node, user_id int, mediaRoot string) ([]types.FilePath,
 					*doc.FileName,
 				)
 			}
-			uid := docVer.UUID.String()
+			uid := docVer.ID.String()
 			dest := fmt.Sprintf("docvers/%s/%s/%s/%s", uid[0:2], uid[2:4], uid, *doc.FileName)
 			path := types.FilePath{
 				Source: source,

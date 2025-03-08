@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 	models "github.com/papermerge/pmdump/models/app_v2_0"
 )
@@ -20,10 +21,11 @@ func GetUsers(db *sql.DB) ([]models.User, error) {
 
 	for rows.Next() {
 		var user models.User
-		err = rows.Scan(&user.ID, &user.Username, &user.EMail)
+		err = rows.Scan(&user.LegacyID, &user.Username, &user.EMail)
 		if err != nil {
 			return nil, err
 		}
+		user.ID = uuid.New()
 		users = append(users, user)
 	}
 

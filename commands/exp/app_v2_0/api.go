@@ -27,7 +27,7 @@ func PerformExport(
 
 	results, err := database.GetUsers(db)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: GetUsers: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -44,14 +44,14 @@ func PerformExport(
 
 		models.ForEachDocument(
 			users[i].Home,
-			users[i].ID,
+			users[i].LegacyID,
 			docPages,
 			settings.MediaRoot,
 			models.InsertDocVersionsAndPages,
 		)
 		models.ForEachDocument(
 			users[i].Inbox,
-			users[i].ID,
+			users[i].LegacyID,
 			docPages,
 			settings.MediaRoot,
 			models.InsertDocVersionsAndPages,
@@ -65,7 +65,7 @@ func PerformExport(
 		home := users[i].Home.GetUserDocuments()
 		allDocs = append(allDocs, inbox...)
 		allDocs = append(allDocs, home...)
-		userFilePaths, err := models.GetFilePaths(allDocs, users[i].ID, settings.MediaRoot)
+		userFilePaths, err := models.GetFilePaths(allDocs, users[i].LegacyID, settings.MediaRoot)
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error getting file paths: %v\n", err)
@@ -87,8 +87,6 @@ func PerformExport(
 		fmt.Fprintf(os.Stderr, "Error writing to file:performExport2: %v", err)
 		os.Exit(1)
 	}
-
-	filePaths = append(filePaths, types.FilePath{Source: exportYaml, Dest: exportYaml})
 
 	return filePaths
 }

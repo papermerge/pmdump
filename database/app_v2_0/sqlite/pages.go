@@ -33,7 +33,7 @@ func GetDocumentPageRows(db *sql.DB, user_id interface{}) ([]models.DocumentPage
 	for rows.Next() {
 		var entry models.DocumentPageRow
 		err = rows.Scan(
-			&entry.PageID,
+			&entry.PageLegacyID,
 			&entry.PageNumber,
 			&entry.Text,
 			&entry.DocumentID,
@@ -42,7 +42,7 @@ func GetDocumentPageRows(db *sql.DB, user_id interface{}) ([]models.DocumentPage
 		if err != nil {
 			return nil, err
 		}
-		entry.PageUUID = uuid.New()
+		entry.PageID = uuid.New()
 		entries = append(entries, entry)
 	}
 	return entries, nil

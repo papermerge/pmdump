@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"strings"
 
-	postgres_db "github.com/papermerge/pmdump/database/app_v2_0/postgres"
 	sqlite_db "github.com/papermerge/pmdump/database/app_v2_0/sqlite"
 
 	"github.com/papermerge/pmdump/types"
@@ -39,8 +38,6 @@ func GetUsers(db *types.DBConn) (any, error) {
 	switch db.DBType {
 	case types.SQLite:
 		return sqlite_db.GetUsers(db.DB)
-	case types.Postgres:
-		return postgres_db.GetUsers(db.DB)
 	}
 
 	return nil, fmt.Errorf("database GetUsers: db type %q not supported", db.DBType)
@@ -50,8 +47,6 @@ func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, error
 	switch db.DBType {
 	case types.SQLite:
 		return sqlite_db.GetHomeFlatNodes(db.DB, user_id)
-	case types.Postgres:
-		return postgres_db.GetHomeFlatNodes(db.DB, user_id)
 	}
 
 	return nil, fmt.Errorf("database GetHomeFlatNodes: db type %q not supported", db.DBType)
@@ -61,8 +56,6 @@ func GetInboxFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, erro
 	switch db.DBType {
 	case types.SQLite:
 		return sqlite_db.GetInboxFlatNodes(db.DB, user_id)
-	case types.Postgres:
-		return postgres_db.GetInboxFlatNodes(db.DB, user_id)
 	}
 
 	err := fmt.Errorf(
@@ -77,8 +70,6 @@ func GetUserNodes(db *types.DBConn, user *any) error {
 	switch db.DBType {
 	case types.SQLite:
 		return sqlite_db.GetUserNodes(db.DB, user)
-	case types.Postgres:
-		return postgres_db.GetUserNodes(db.DB, user)
 	}
 
 	return fmt.Errorf(
@@ -91,8 +82,6 @@ func GetDocumentPageRows(db *types.DBConn, user_id interface{}) (interface{}, er
 	switch db.DBType {
 	case types.SQLite:
 		return sqlite_db.GetDocumentPageRows(db.DB, user_id)
-	case types.Postgres:
-		return postgres_db.GetDocumentPageRows(db.DB, user_id)
 	}
 
 	err := fmt.Errorf(
