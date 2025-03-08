@@ -1,9 +1,9 @@
 # PMDump
 
-Tool to migrate Papermerge DMS data.
+Tool to migrate Papermerge DMS data between incompatible versions.
 
-Basically you export data from one version as tar.gz archive and import it
-into 3.4
+Basically you export data from one (older) version as tar.gz archive and import it
+into the 3.4 (latest).
 
 For PMDump version 0.1 `export` command works for following Papermerge DMS versions/databases
 
@@ -16,11 +16,48 @@ Currently `import` command works to import only into 3.4 either SQLite or Postgr
 
 ✅ - It works
 ❌ - no plans to implement this part yet. If you need this to be implemented, please
-     open a ticket and provide docker compose with your setup.
+     [open a ticket](https://github.com/ciur/papermerge/issues) and provide docker compose with your setup.
 🚧 - Work in progress. Will be available soon.
+
+## Get It
+
+Download suitable binary file directly from release page:
+
+  https://github.com/papermerge/pmdump/releases
+
+```
+wget -O pmdump <URL to the binary of the latest version for your platform>
+```
+
+OR
+
+```
+curl -o pmdump  <URL to the binary of the latest version for your platform>
+```
+
+And then:
+
+```
+chmod +x pmdump
+sudo mv mybinary /usr/local/bin/
+```
+
+You can add the current directory to your PATH temporarily:
+
+```
+export PATH=$PWD:$PATH
+```
 
 ## Usage
 
+There are two commands:
+
+  - export
+  - import
+
+for both you need to specify also configuration file. For `export` command,
+configuration file indicates "the source". For `import` command
+configuration file indicates "the destination".
 
 ### Export Config
 
