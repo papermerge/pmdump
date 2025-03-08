@@ -142,12 +142,18 @@ Run import command (notice that `import` is at the end of parameters)
 pmdump -c dest_pg.yaml -f /path/to/archive.tar.gz import
 ```
 
-If you are importing into SQLite database, configuration file will look like:
+If you are importing into SQLite database, configuration file, dest_sqlite.yaml, will look like:
 
 ```yaml
 media_root: /home/eugen/DockerCompose/pm3.4-sqlite/media/
 database_url: sqlite:///home/eugen/DockerCompose/pm3.4-sqlite/data/db.sqlite3
 app_version: 3.4
+```
+
+And command is same:
+
+```bash
+pmdump -c dest_sqlite.yaml -f /path/to/archive.tar.gz import
 ```
 
 
