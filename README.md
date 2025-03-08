@@ -14,10 +14,10 @@ For PMDump version 0.1 `export` command works for following Papermerge DMS versi
 
 Currently `import` command works to import only into 3.4 either SQLite or PostgreSQL database.
 
-✅ - It works
-❌ - no plans to implement this part yet. If you need this to be implemented, please
+ - ✅ - means: it works
+ - ❌ - means: no plans to implement this part yet. If you need this to be implemented, please
      [open a ticket](https://github.com/ciur/papermerge/issues) and provide docker compose with your setup.
-🚧 - Work in progress. Will be available soon.
+ - 🚧 - means: work in progress. Will be available soon.
 
 ## Get It
 
