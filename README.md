@@ -1,9 +1,18 @@
 # PMDump
 
-Tool to migrate Papermerge data from one version to another.
-Use this tool to migrate from Papermerge 2.0, 2.1, 3.3 to the latest version e.g 3.4.
+Tool to migrate Papermerge DMS data.
 
-Work in progress...
+Basically you export data from one version as tar.gz archive and import it
+into 3.4
+
+Export work for following versions/databases
+
+|  db/pmg version  |  2.0 | 2.1          | 3.2 | 3.3 |
+|------------------|------|--------------|-----|-----|
+|       SQLite     |  ✅  | coming...    |     | ✅  |
+|       PostgreSQL |  ✅  | coming...    | ✅  | ✅  |
+
+
 
 ## Usage
 
@@ -72,7 +81,6 @@ Here are couple of valid examples for `export` command:
 ```
 $ pmdump -c examples/source_3_3_pg.yaml -f pm3.3_pg.tar.gz export
 ```
-
 
 
 ### Import
