@@ -35,7 +35,7 @@ func Open(dburl string, appVer types.AppVersion) (*types.DBConn, error) {
 	return nil, fmt.Errorf("database open: app version %q not supported", appVer)
 }
 
-func GetUsers(db *types.DBConn) (interface{}, error) {
+func GetUsers(db *types.DBConn) (any, error) {
 	switch db.DBType {
 	case types.SQLite:
 		return sqlite_db.GetUsers(db.DB)
@@ -73,7 +73,7 @@ func GetInboxFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, erro
 	return nil, err
 }
 
-func GetUserNodes(db *types.DBConn, user *interface{}) error {
+func GetUserNodes(db *types.DBConn, user *any) error {
 	switch db.DBType {
 	case types.SQLite:
 		return sqlite_db.GetUserNodes(db.DB, user)

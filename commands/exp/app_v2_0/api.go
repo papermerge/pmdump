@@ -31,7 +31,7 @@ func PerformExport(
 		os.Exit(1)
 	}
 
-	users := results.(models.Users)
+	users := results.([]models.User)
 
 	for i := 0; i < len(users); i++ {
 		database.GetUserNodes(db, &users[i])
@@ -40,7 +40,7 @@ func PerformExport(
 			fmt.Fprintf(os.Stderr, "Error getting GetDocumentPageRows: %v", err)
 		}
 
-		docPages := results.(models.DocumentPageRows)
+		docPages := results.([]models.DocumentPageRow)
 
 		models.ForEachDocument(
 			users[i].Home,

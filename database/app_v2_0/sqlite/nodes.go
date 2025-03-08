@@ -163,9 +163,9 @@ func GetHomeFlatNodes(db *sql.DB, user_id interface{}) ([]models.FlatNode, error
 	return nodes, nil
 }
 
-func GetUserNodes(db *sql.DB, u *interface{}) error {
+func GetUserNodes(db *sql.DB, u *any) error {
 
-	user := (*u).(models.User)
+	user := (*u).(*models.User)
 
 	user.Inbox = &models.Node{
 		Title:    "inbox",
