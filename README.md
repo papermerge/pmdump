@@ -1,6 +1,6 @@
 # PMDump
 
-Tool for migrating Papermerge DMS data between incompatible versions.
+Tool for migrating Papermerge DMS data between different versions.
 
 Basically you export data from one (older) version as tar.gz archive and import it
 into the 3.4 (latest).
