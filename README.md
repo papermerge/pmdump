@@ -71,7 +71,7 @@ which stores its data in SQLite database:
 ```yaml
 app_version: 2.0
 media_root: /path/to/media/folder/
-database_url: /path/to/data/papermerge.db
+database_url: sqlite:///path/to/data/papermerge.db
 ```
 
 In case of exporting data from app version 3.3 which
