@@ -9,8 +9,11 @@ import (
 	"github.com/papermerge/pmdump/config"
 )
 
+const PMDUMP_VERSION = "0.2"
+
 var configFile = flag.String("c", "", "path to config file")
 var targetFile = flag.String("f", "", "Target file - zipped tar archive file name were to dump")
+var version = flag.Bool("version", false, "show version and exit")
 
 const exportYaml = "export.yaml"
 const exportCommand = "export"
@@ -19,7 +22,27 @@ const importCommand = "import"
 func main() {
 	flag.Parse()
 
+	flag.Usage = func() {
+		w := flag.CommandLine.Output()
+
+		fmt.Fprintf(
+			w,
+			"Usage: %s [-c config.yaml] [-f archive.tar.gz] export | import \n",
+			os.Args[0],
+		)
+
+		flag.PrintDefaults()
+
+		fmt.Fprintf(w, "For more details check: https://github.com/papermerge/pmdump\n")
+
+	}
+
 	args := flag.Args()
+
+	if *version {
+		fmt.Println(PMDUMP_VERSION)
+		os.Exit(0)
+	}
 
 	if *configFile == "" {
 		fmt.Fprintf(os.Stderr, "Missing configuration. Did you forget -c flag?\n")
