@@ -1,4 +1,4 @@
-package sqlite_app_v3_3
+package sqlite_app_v3_2
 
 import (
 	"database/sql"
@@ -16,7 +16,7 @@ func GetDocumentVersionsForNode(
 ) ([]models.DocumentVersionPageRow, error) {
 	query := `
     SELECT
-      d.node_id AS DocumentID,
+      d.basetreenode_ptr_id AS DocumentID,
       dv.id AS DocumentVersionID,
       dv.number AS DocumentVersionNumber,
       dv.text AS DocumentText,
@@ -26,10 +26,10 @@ func GetDocumentVersionsForNode(
       p.id AS PageID,
       p.number AS PageNumber,
       p.text AS PageText
-    FROM document_versions dv
-    JOIN pages p ON p.document_version_id = dv.id
-    JOIN documents d ON d.node_id = dv.document_id
-    WHERE d.node_id = ?
+    FROM core_documentversion dv
+    JOIN core_page p ON p.document_version_id = dv.id
+    JOIN core_document d ON d.basetreenode_ptr_id = dv.document_id
+    WHERE d.basetreenode_ptr_id = ?
   `
 	node_uuid := utils.UUID2STR(node_id)
 

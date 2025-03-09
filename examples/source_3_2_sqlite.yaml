@@ -1,0 +1,4 @@
+app_version: 3.2
+media_root: /home/eugen/DockerCompose/pm3.2-sqlite/media32
+database_url: sqlite:///home/eugen/DockerCompose/pm3.2-sqlite/database32/pmg.db
+

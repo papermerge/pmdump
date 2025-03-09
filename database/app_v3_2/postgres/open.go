@@ -1,4 +1,4 @@
-package postgres_app_v3_3
+package postgres_app_v3_2
 
 import (
 	"database/sql"
