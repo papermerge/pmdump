@@ -1,3 +1,3 @@
-media_root: /home/eugen/DockerCompose/pm3.4-pg/media34a4/
-database_url: postgresql://coco:kesha@127.0.0.1:5432/pmg34a4?sslmode=disable
+media_root: /home/eugen/DockerCompose/pm3.4-pg/media34a5/
+database_url: postgresql://coco:kesha@127.0.0.1:5432/pmg34a5?sslmode=disable
 app_version: 3.4
