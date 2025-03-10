@@ -1,0 +1,3 @@
+media_root: /volume1/docker/papermerge/media
+database_url: postgresql://coco:jumbo@127.0.0.1:5432/pmgdb?sslmode=disable
+app_version: 2.1

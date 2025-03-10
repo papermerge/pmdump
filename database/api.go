@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	database_app_v2_0 "github.com/papermerge/pmdump/database/app_v2_0"
+	database_app_v2_1 "github.com/papermerge/pmdump/database/app_v2_1"
 	database_app_v3_2 "github.com/papermerge/pmdump/database/app_v3_2"
 	database_app_v3_3 "github.com/papermerge/pmdump/database/app_v3_3"
 	database_app_v3_4 "github.com/papermerge/pmdump/database/app_v3_4"
@@ -15,6 +16,8 @@ func Open(dburl string, appVer types.AppVersion) (*types.DBConn, error) {
 	switch appVer {
 	case types.V2_0:
 		return database_app_v2_0.Open(dburl, appVer)
+	case types.V2_1:
+		return database_app_v2_1.Open(dburl, appVer)
 	case types.V3_3, types.V3_4:
 		return database_app_v3_3.Open(dburl, appVer)
 	case types.V3_2:
@@ -32,6 +35,8 @@ func GetUsers(db *types.DBConn) (any, error) {
 		return database_app_v3_3.GetUsers(db.DB)
 	case types.V3_2:
 		return database_app_v3_2.GetUsers(db.DB)
+	case types.V2_1:
+		return database_app_v2_1.GetUsers(db.DB)
 	}
 
 	return nil, fmt.Errorf("database GetUsers: app version %q not supported", db.AppVersion)
@@ -144,6 +149,8 @@ func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, error
 		return database_app_v3_3.GetHomeFlatNodes(db, user_id)
 	case types.V3_2:
 		return database_app_v3_2.GetHomeFlatNodes(db, user_id)
+	case types.V2_1:
+		return database_app_v2_1.GetHomeFlatNodes(db, user_id)
 	}
 
 	return nil, fmt.Errorf("database GetHomeFlatNodes: app version %q not supported", db.AppVersion)
@@ -157,6 +164,8 @@ func GetInboxFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, erro
 		return database_app_v3_3.GetInboxFlatNodes(db, user_id)
 	case types.V3_2:
 		return database_app_v3_2.GetInboxFlatNodes(db, user_id)
+	case types.V2_1:
+		return database_app_v2_1.GetInboxFlatNodes(db, user_id)
 	}
 
 	return nil, fmt.Errorf("database GetInboxFlatNodes: app version %q not supported", db.AppVersion)
@@ -170,6 +179,8 @@ func GetUserNodes(db *types.DBConn, user interface{}) error {
 		return database_app_v3_3.GetUserNodes(db, &user)
 	case types.V3_2:
 		return database_app_v3_2.GetUserNodes(db, &user)
+	case types.V2_1:
+		return database_app_v2_1.GetUserNodes(db, &user)
 	}
 
 	return fmt.Errorf("database GetUserNodes: app version %q not supported", db.AppVersion)
@@ -197,6 +208,8 @@ func InsertDocVersionsAndPages(db *types.DBConn, node any) error {
 		database_app_v3_3.InsertDocVersionsAndPages(db, node)
 	case types.V3_2:
 		database_app_v3_2.InsertDocVersionsAndPages(db, node)
+	case types.V2_1:
+		database_app_v2_1.InsertDocVersionsAndPages(db, node)
 	}
 
 	return fmt.Errorf("database InsertDocVersionsAndPages: app version %q not supported", db.AppVersion)
