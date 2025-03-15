@@ -17,6 +17,7 @@ var AppVersionsForExport = []AppVersion{
 	V3_1,
 	V3_2,
 	V3_3,
+	V3_4,
 }
 
 const (

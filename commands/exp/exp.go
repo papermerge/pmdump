@@ -27,15 +27,17 @@ func PerformExport(settings config.Config, targetFile, exportYaml string) {
 	switch settings.AppVersion {
 	case string(types.V2_0):
 		filePaths = exporter_app_v2_0.PerformExport(settings, targetFile, exportYaml)
-	case string(types.V3_3):
-		filePaths = exporter_app_v3_3.PerformExport(settings, targetFile, exportYaml)
 	case string(types.V2_1):
 		filePaths = exporter_app_v2_1.PerformExport(settings, targetFile, exportYaml)
 	case string(types.V3_2):
 		filePaths = exporter_app_v3_2.PerformExport(settings, targetFile, exportYaml)
+	case string(types.V3_3), string(types.V3_4):
+		filePaths = exporter_app_v3_3.PerformExport(settings, targetFile, exportYaml)
+
 	default:
 		supported_versions := []types.AppVersion{
 			types.V2_0, types.V2_1,
+			types.V3_2, types.V3_3, types.V3_4,
 		}
 		fmt.Fprintf(os.Stderr, "Export for version %q not supported\n", settings.AppVersion)
 		fmt.Fprintf(os.Stderr, "Supported versions are %v\n", supported_versions)

@@ -31,7 +31,7 @@ func GetUsers(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
 	case types.V2_0:
 		return database_app_v2_0.GetUsers(db)
-	case types.V3_3:
+	case types.V3_4, types.V3_3:
 		return database_app_v3_3.GetUsers(db.DB)
 	case types.V3_2:
 		return database_app_v3_2.GetUsers(db.DB)
@@ -44,7 +44,7 @@ func GetUsers(db *types.DBConn) (any, error) {
 
 func GetGroups(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_4, types.V3_3:
 		return database_app_v3_3.GetGroups(db)
 	}
 
@@ -53,7 +53,7 @@ func GetGroups(db *types.DBConn) (any, error) {
 
 func GetPermissions(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetPermissions(db)
 	}
 
@@ -62,7 +62,7 @@ func GetPermissions(db *types.DBConn) (any, error) {
 
 func GetGroupsPermissions(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetGroupsPermissions(db)
 	}
 
@@ -71,7 +71,7 @@ func GetGroupsPermissions(db *types.DBConn) (any, error) {
 
 func GetDocumentTypes(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetDocumentTypes(db)
 	}
 
@@ -80,7 +80,7 @@ func GetDocumentTypes(db *types.DBConn) (any, error) {
 
 func GetTags(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetTags(db)
 	}
 
@@ -89,7 +89,7 @@ func GetTags(db *types.DBConn) (any, error) {
 
 func GetNodesTags(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetNodesTags(db)
 	}
 
@@ -98,7 +98,7 @@ func GetNodesTags(db *types.DBConn) (any, error) {
 
 func GetUsersGroups(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetUsersGroups(db)
 	}
 
@@ -107,7 +107,7 @@ func GetUsersGroups(db *types.DBConn) (any, error) {
 
 func GetUsersPermissions(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetUsersPermissions(db)
 	}
 
@@ -116,7 +116,7 @@ func GetUsersPermissions(db *types.DBConn) (any, error) {
 
 func GetCustomFields(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetCustomFields(db)
 	}
 
@@ -125,7 +125,7 @@ func GetCustomFields(db *types.DBConn) (any, error) {
 
 func GetDocumentTypesCustomFields(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetDocumentTypesCustomFields(db)
 	}
 
@@ -134,7 +134,7 @@ func GetDocumentTypesCustomFields(db *types.DBConn) (any, error) {
 
 func GetCustomFieldValues(db *types.DBConn) (any, error) {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetCustomFieldValues(db)
 	}
 
@@ -145,7 +145,7 @@ func GetHomeFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, error
 	switch db.AppVersion {
 	case types.V2_0:
 		return database_app_v2_0.GetHomeFlatNodes(db, user_id)
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetHomeFlatNodes(db, user_id)
 	case types.V3_2:
 		return database_app_v3_2.GetHomeFlatNodes(db, user_id)
@@ -160,7 +160,7 @@ func GetInboxFlatNodes(db *types.DBConn, user_id interface{}) (interface{}, erro
 	switch db.AppVersion {
 	case types.V2_0:
 		return database_app_v2_0.GetInboxFlatNodes(db, user_id)
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetInboxFlatNodes(db, user_id)
 	case types.V3_2:
 		return database_app_v3_2.GetInboxFlatNodes(db, user_id)
@@ -175,7 +175,7 @@ func GetUserNodes(db *types.DBConn, user interface{}) error {
 	switch db.AppVersion {
 	case types.V2_0:
 		return database_app_v2_0.GetUserNodes(db, &user)
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		return database_app_v3_3.GetUserNodes(db, &user)
 	case types.V3_2:
 		return database_app_v3_2.GetUserNodes(db, &user)
@@ -204,7 +204,7 @@ func InsertUsersData(db *types.DBConn, sourceUsers any, targetUsers any) ([]type
 
 func InsertDocVersionsAndPages(db *types.DBConn, node any) error {
 	switch db.AppVersion {
-	case types.V3_3:
+	case types.V3_3, types.V3_4:
 		database_app_v3_3.InsertDocVersionsAndPages(db, node)
 	case types.V3_2:
 		database_app_v3_2.InsertDocVersionsAndPages(db, node)

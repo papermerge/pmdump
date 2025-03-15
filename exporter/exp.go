@@ -17,7 +17,6 @@ func CreateYAML(
 	switch appVersion {
 	case types.V2_0:
 		return exporter_app_v2_0.CreateYAML(fileName, data)
-
 	case types.V3_3:
 		return exporter_app_v3_3.CreateYAML(fileName, data)
 	case types.V3_2:

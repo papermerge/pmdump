@@ -1,0 +1,3 @@
+media_root: /home/eugen/var/data-media-root
+database_url: postgresql://coco:jumbo@127.0.0.1:5432/pmgdb?sslmode=disable
+app_version: 3.4

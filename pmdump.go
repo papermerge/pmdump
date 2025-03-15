@@ -9,7 +9,7 @@ import (
 	"github.com/papermerge/pmdump/config"
 )
 
-const PMDUMP_VERSION = "0.2"
+const PMDUMP_VERSION = "0.4"
 
 var configFile = flag.String("c", "", "path to config file")
 var targetFile = flag.String("f", "", "Target file - zipped tar archive file name were to dump")
