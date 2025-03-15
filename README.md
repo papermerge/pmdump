@@ -7,10 +7,10 @@ into the 3.4 (latest).
 
 For PMDump version 0.3 `export` command works for following Papermerge DMS versions/databases
 
-|  db/pmg version  |  2.0 | 2.1   | 3.2         | 3.3 |
-|------------------|------|-------|-------------|-----|
-|       SQLite     |  ✅  | ✅    | ✅          | ✅  |
-|       PostgreSQL |  ❌  | ✅    | ✅          | ✅  |
+|  db/pmg version  |  2.0 | 2.1   | 3.2         | 3.3 | 3.4 |
+|------------------|------|-------|-------------|-----|-----|
+|       SQLite     |  ✅  | ✅    | ✅          | ✅  |✅  |
+|       PostgreSQL |  ❌  | ✅    | ✅          | ✅  |✅  |
 
 Currently `import` command works to import only into 3.4 either SQLite or PostgreSQL database.
 
@@ -21,9 +21,7 @@ Currently `import` command works to import only into 3.4 either SQLite or Postgr
 
 ## Get It
 
-Download suitable binary file directly from release page:
-
-  https://github.com/papermerge/pmdump/releases
+Download suitable binary file directly from [release page](https://github.com/papermerge/pmdump/releases)
 
 ```
 wget -O pmdump <URL to the binary of the latest version for your platform>
